@@ -1,27 +1,8 @@
-var dim;
-var pulse = .1;
-var iflag = 1;
-
-
-function setup() {
-  createCanvas(710, 400);
-  dim = width/2;
-  background(0);
-  colorMode(HSB, 360, 100, 100);
-  noStroke();
-  ellipseMode(RADIUS);
-  frameRate(10);
-}
-
-function draw() {
-  background(0);
-  
-  drawGradient(dim, height/2);
-}
-
-function drawGradient(x, y) {
+function justbreath(x, y) {
   var radius = dim/2;
   var v = 0;
+  background(0);
+  colorMode(HSB, 360, 100, 100, 1);
 
   for (var r = radius; r > 0; --r) {
     fill(60, 55, v);
@@ -37,15 +18,15 @@ function drawGradient(x, y) {
 
   //Swinging pulse counter
   if(iflag == 1){
-    pulse+= .1;
+    pulse+= .01;
   }else{
-    pulse-=.1;
+    pulse-=.01;
   }
 
   if(pulse <= .1){
     iflag = 1;
   }
-  if(pulse >= .5){
+  if(pulse >= .4){
     iflag = 0;
   }
   
