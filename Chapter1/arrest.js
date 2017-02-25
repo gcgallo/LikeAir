@@ -10,8 +10,8 @@ function arrest(x, y) {
   
   //ellipse(200, 200, 100, 100);
 
-  tint(255, 164);
-  image(cops, 0, 0); // draw a second copy to canvas
+  tint(255, 127);
+  image(cops, 0, 0, 710); // draw a second copy to canvas
   
   filter('DILATE');
 
