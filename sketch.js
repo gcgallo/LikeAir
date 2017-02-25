@@ -1,5 +1,5 @@
 var dim;
-var pulse = 3;
+var pulse = .3;
 var iflag = 1;
 var cops;
 var pulsar;
@@ -7,7 +7,7 @@ var i = 0;
 var img;
 var offsetX = 0;
 var offsetY = 0;
-var easing = 0.05;
+var easing = 0.005;
 
 
 function setup() {
@@ -15,7 +15,7 @@ function setup() {
   dim = width/2;
   background(0);
   noStroke();
-  noCursor();
+  //noCursor();
   ellipseMode(RADIUS);
   //frameRate(10);
   img = loadImage('pulsar.png');
@@ -27,9 +27,7 @@ function setup() {
 }
 
  function draw() {
-      if(mouseIsPressed) {
-        i++
-      } 
+      
       if(i == 0){
         pulsar(dim, height/2);
         
@@ -44,4 +42,10 @@ function setup() {
       }
       if(i >=3)
         i=0;
+    }
+
+    function keyPressed() {
+
+      i++;
+
     }

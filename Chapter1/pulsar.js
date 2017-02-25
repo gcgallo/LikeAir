@@ -3,9 +3,10 @@ function pulsar(x, y) {
   justbreath(x, y);
 
   colorMode(RGB);
-
-  var dx = (mouseX-img.width/2) - offsetX;
-  var dy = (mouseY-img.height/2) - offsetY;
+  var x1 = 0 + random(-40,40);
+  var y1 = 0 + random(-40,40);
+  var dx = x1 - offsetX;
+  var dy = y1 - offsetY;
   offsetX += dx * easing;
   offsetY += dy * easing;
 
@@ -14,3 +15,4 @@ function pulsar(x, y) {
 
 }
 
+ 
