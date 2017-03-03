@@ -1,6 +1,6 @@
 function arrest(x, y) {
 
-  justbreath(x, y);
+  justbreath(x, y, .1, 0, 0, -1);
 
   colorMode(RGB);
 
