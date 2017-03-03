@@ -1,13 +1,18 @@
-function justbreath(x, y) {
+function justbreath(x, y, pace, h, s, vsig) {
   var radius = dim/2;
-  var v = 0;
-  background(0);
+
+  var v;
+  if(vsig == -1)
+    v = 100;
+  else
+    v = 0;
+
   colorMode(HSB, 360, 100, 100, 1);
 
   for (var r = radius; r > 0; --r) {
-    fill(60, 55, v);
+    fill(h, s, v);
     ellipse(x, y, r, r);
-    v = (v + 1*pulse) % 100;
+    v = (v + vsig*pulse) % 100;
   }
 
   //non-swinging pulse
@@ -18,15 +23,15 @@ function justbreath(x, y) {
 
   //Swinging pulse counter
   if(iflag == 1){
-    pulse+= .01;
+    pulse+= pace;
   }else{
-    pulse-=.01;
+    pulse-= pace;
   }
 
   if(pulse <= .1){
     iflag = 1;
   }
-  if(pulse >= .4){
+  if(pulse >= .3){
     iflag = 0;
   }
   

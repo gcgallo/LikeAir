@@ -13,7 +13,7 @@ var easing = 0.005;
 function setup() {
   createCanvas(710, 400);
   dim = width/2;
-  background(0);
+  //background(0);
   noStroke();
   //noCursor();
   ellipseMode(RADIUS);
@@ -28,24 +28,34 @@ function setup() {
 
  function draw() {
       
+      if(i == -1)
+        i=2;
+
       if(i == 0){
+        background(0);
         pulsar(dim, height/2);
         
       }
       if(i == 1){
-        justbreath(dim, height/2);
+        background(255);
+        justbreath(dim, height/2, .01, 0, 0, -1);
         
       }
       if(i == 2){
+        background(255);
         arrest(dim, height/2);
 
       }
       if(i >=3)
         i=0;
-    }
+ }
 
-    function keyPressed() {
+ function keyPressed() {
 
-      i++;
+     if(keyCode == RIGHT_ARROW){
+        i++;
+     }
+     else if(keyCode == LEFT_ARROW)
+        i--;
 
     }

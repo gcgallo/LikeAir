@@ -1,6 +1,8 @@
 function pulsar(x, y) {
 
-  justbreath(x, y);
+  //background(0);
+
+  justbreath(x, y, .01, 0, 0, 1);
 
   colorMode(RGB);
   var x1 = 0 + random(-40,40);
