@@ -2,9 +2,9 @@ function arrestII(x, y) {
 
   justbreath(x, y, .001, 0, 0, -1);
 
-  for(i=0; i<=710; i+=60){
+  for(x2=0; x2<=710; x2+=60){
   
-     rectangle(i, 0, i+20, 410); 
+     rect(x2, 0, x2+20, 410); 
  
   }
 }
