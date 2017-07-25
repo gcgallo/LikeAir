@@ -6,17 +6,11 @@ var clock = new THREE.Clock();
 var PI = 3.14159
 //var capturer = new CCapture( { format: 'gif', workersPath: 'js/' } );
 var W = window.innerWidth, H = window.innerHeight;
-var gif = new GIF({
-  workers: 2,
-  quality: 10,
-  width: W, 
-  height: H 
-});
 
 var progress = document.getElementById( 'progress' );
 var generating = false;
 var time = 0;
-
+var capturer = new CCapture( { format: 'webm' } );
 
 function init() {
 
@@ -103,21 +97,25 @@ function init() {
     controls.enableDamping = true;
     controls.dampingFactor = 0.05;
 
+    capturer.start();
+
 }
 
 function animate() {
 
-                if ( generating === false) {
+    if ( generating === false) {
 
-                    requestAnimationFrame( animate );
+        requestAnimationFrame( animate );
 
-                }
+    }
 
-                time = ( time + 0.002 ) % 1;
+    time = Date.now() * 0.0005;
 
-                render( time );
+    render( time );
 
-            }
+    capturer.capture( renderer.domElement );
+
+}
 
 function render( float ){
 
@@ -129,9 +127,9 @@ function render( float ){
     //camera.lookAt(mesh.position);
     var delta = clock.getDelta();
     if( mesh ) mesh.rotation.y -= 0.5 * delta;
-    moonGlow.rotation.y -= 1.5 * delta;
+    //moonGlow.rotation.y -= 1.5 * delta;
 
-    mesh.position.x = Math.sin(time *  0.7) * 30;
+    mesh.position.x = Math.sin( time * 0.7 ) * 30;
     mesh.position.y = Math.cos( time * 0.5 ) * 40;
     mesh.position.z = Math.cos( time * 0.3 ) * 30;
 
@@ -148,16 +146,36 @@ function render( float ){
 
     renderer.render( scene, camera );
     //effect.render( scene, camera );
-
+    //sendToServer();
 
 }
 
-function generateGIF() {
+/*function sendToServer() {
+    var asString = renderer.domElement.toDataURL();
 
+     if (isOpen) {
+         frame++;
+          ws.send(str2ab(frame+asString));
+     }
+}
+
+function str2ab(str) {
+    var buf = new ArrayBuffer(str.length);
+    var bufView = new Uint8Array(buf);
+    for (var i=0, strLen=str.length; i<strLen; i++) {
+        bufView[i] = str.charCodeAt(i);
+    }
+    return buf;
+}*/
+
+function generateWEBM() {
+
+    capturer.stop();
+    download(capturer.save(), "sample", "webm")
     generating = true;
 
-    var current = 0;
-    var total = 50;
+    /*var current = 0;
+    var total = 400;
 
     var canvas = document.createElement( 'canvas' );
     canvas.width = renderer.domElement.width;
@@ -205,7 +223,9 @@ function generateGIF() {
         // force palette to be power of 2
 
         var powof2 = 1;
-        while ( powof2 < palette.length ) powof2 <<= 1;
+        while ( powof2 < palette.length ) 
+        powof2 <<= 1;
+        if ( powof2 >= 255 ) powof2 = 1;
         palette.length = powof2;
 
         gif.addFrame( 0, 0, canvas.width, canvas.height, pixels, { palette: new Uint32Array( palette ), delay: 5 } );
@@ -248,6 +268,7 @@ function generateGIF() {
     }
 
     addFrame();
+    */
 
 }
 

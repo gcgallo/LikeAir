@@ -2,6 +2,7 @@
 <html>
     <head>
        <meta charset="utf-8">
+       <meta http-equiv="Pragma" content="no-cache"/>
        <style>
            body {
                background-color: #000000;
@@ -11,15 +12,14 @@
        </style>
     </head>
     <body>
-        <button onClick="generateGIF()">Generate GIF</button>
-        powered by <a href="https://github.com/deanm/omggif">omggif</a><br />
+        <button onClick="generateWEBM()">Generate Video</button><br />
         <progress id="progress" value="0" max="1"></progress><br />
         <div id="container"></div>
         <script src="js/three.js"></script>
         <script src="js/omggif.js"></script>
         <script src="js/Detector.js"></script>
         <script src="js/OrbitControls.js"></script>
-        <script src="js/Ccapture.all.min.js"></script>
+        <script src="js/CCapture.all.min.js"></script>
         <script src="js/gif.js"></script>
         <script src="js/gif.worker.js"></script>
         <script src="js/CanvasRenderer.js"></script>
