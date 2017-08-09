@@ -1,18 +1,21 @@
 if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
 
-var camera, scene, renderer, light1;
-var geometry, material, mesh;
+var camera, scene, renderer, light1, tick = 0;
+var geometry, material, mesh, particleSystem1, particleSystem2;
+var options, spawnerOptions;
 var clock = new THREE.Clock();
-var PI = 3.14159
-//var capturer = new CCapture( { format: 'gif', workersPath: 'js/' } );
+var PI = 3.14159; //replace with Math.Pi
 var W = window.innerWidth, H = window.innerHeight;
 
 var progress = document.getElementById( 'progress' );
 var generating = false;
 var time = 0;
-var capturer = new CCapture( { format: 'webm' } );
+var capturer = new CCapture( { format: 'webm' , framerate: 30 } );
 
 function init() {
+
+    //var loader = new THREE.BinaryLoader();
+    var loader = new THREE.JSONLoader();
 
     var container = document.getElementById( 'container' );
 
@@ -31,14 +34,87 @@ function init() {
     scene.add(mesh);
 
     var sphere = new THREE.SphereGeometry( 5, 64, 16 );
+    /*
     light1 = new THREE.PointLight( 0xff0040, 10, 50 );
     light1.add( new THREE.Mesh( sphere, new THREE.MeshBasicMaterial( { color: 0xff0040 } ) ) );
     scene.add( light1 );
+    */
 
     light2 = new THREE.PointLight( 0x00fff0, 10, 50 );
     light2.add( new THREE.Mesh( sphere, new THREE.MeshBasicMaterial( { color: 0x00fff0 } ) ) );
     scene.add( light2 );
 
+    var particleCount = 1800,
+        particles = new THREE.SphereGeometry(),
+        pMaterial = new THREE.PointsMaterial({
+            color: 0xFFFFFF,
+            size: 20,
+            map: THREE.ImageUtils.loadTexture("textures/perlin-512.png"),
+            blending: THREE.AdditiveBlending,
+            transparent: true
+        });
+
+    for (var p = 0; p < particleCount; p++) {
+
+      // create a particle with random
+      // position values, -250 -> 250
+      var pX = Math.random() * 500 - 250,
+          pY = Math.random() * 500 - 250,
+          pZ = Math.random() * 500 - 250,
+          particle = new THREE.Vector3(pX, pY, pZ);
+
+      // add it to the geometry
+      particles.vertices.push(particle);
+    }
+
+    particleSystem1 = new THREE.Points(
+        particles,
+        pMaterial);
+
+    scene.add(particleSystem1);
+
+    particleSystem2 = new THREE.GPUParticleSystem( {
+        maxParticles: 250000
+    } );
+
+    scene.add( particleSystem2 );
+
+    options = {
+        position: new THREE.Vector3(),
+        positionRandomness: .3,
+        velocity: new THREE.Vector3(),
+        velocityRandomness: .5,
+        color: 0x00fff0, //0xaa88ff,
+        colorRandomness: .2,
+        turbulence: .5,
+        lifetime: 2,
+        size: 30,
+        sizeRandomness: 1
+    };
+
+    spawnerOptions = {
+        spawnRate: 15000,
+        horizontalSpeed: 1.5,
+        verticalSpeed: 1.33,
+        timeScale: 1
+    };
+
+    
+    /* import blender mesh
+    var callback = function( geometry ) {
+        object = new THREE.Mesh( geometry, new THREE.MeshPhongMaterial( { color: 0x555555, specular: 0x111111, shininess: 50 }  )  );
+        object.scale.x = object.scale.y = object.scale.z = 0.80;
+        scene.add( object );
+    };
+    
+    loader.load( "monkey.json", function ( obj ) {
+        //add the loaded object to the scene
+        object = new THREE.Mesh( obj, new THREE.MeshPhongMaterial( { color: 0x555555, specular: 0x111111, shininess: 50 }  )  );
+        object.scale.x = object.scale.y = object.scale.z = 2;
+        scene.add( object );
+    });*/
+  
+    // create glowly stuff
     var customMaterial = new THREE.ShaderMaterial( 
     {
         uniforms: 
@@ -56,31 +132,9 @@ function init() {
     }   );
 
     moonGlow = new THREE.Mesh( sphere.clone(), customMaterial.clone() );
-    moonGlow.position = light1.position;
+    moonGlow.position = light2.position;
     moonGlow.scale.multiplyScalar(7.2);
     scene.add( moonGlow );
-
-    //rendererGL.shadowMapEnabled = true;
-/*
-    for ( var i = 0; i < 5; i ++ ) {
-        map = THREE.ImageUtils.loadTexture('../media/pulsar.png');
-        // your mesh code (from the geometry GUI) goes here
-        geometry = new THREE.SphereGeometry(121.78, 100, 100);
-        material = new THREE.MeshBasicMaterial({shading: THREE.FlatShading, color: 0xdcdcdc, map: map});
-        mesh = new THREE.Mesh(geometry, material);
-        map.wrapS = map.wrapT = THREE.RepeatWrapping;
-        map.repeat.set( 1, 1 );
-        mesh.position.x = 1000 - 500*i;
-        mesh.position.y = 1000 - 500*i;
-        mesh.position.z = 1000 - 500;
-        mesh.rotation.x = Math.random() * 2 * Math.PI;
-        mesh.rotation.y = Math.random() * 2 * Math.PI;
-        mesh.rotation.z = Math.random() * 2 * Math.PI;
-        mesh.castShadow = true;
-
-        scene.add(mesh);
-
-    }*/
 
     //renderer = new THREE.WebGLRenderer( { preserveDrawingBuffer: true } );
     //renderer.setPixelRatio( window.devicePixelRatio );
@@ -97,23 +151,16 @@ function init() {
     controls.enableDamping = true;
     controls.dampingFactor = 0.05;
 
-    capturer.start();
 
 }
 
 function animate() {
 
-    if ( generating === false) {
-
-        requestAnimationFrame( animate );
-
-    }
+    requestAnimationFrame( animate );
 
     time = Date.now() * 0.0005;
 
     render( time );
-
-    capturer.capture( renderer.domElement );
 
 }
 
@@ -125,7 +172,8 @@ function render( float ){
     //camera.position.z = (Math.sin( Date.now() * 0.002 ) * 500) - 3000;
     //camera.position.y = Math.sin( Date.now() * 0.002 ) * 300;
     //camera.lookAt(mesh.position);
-    var delta = clock.getDelta();
+    //var delta = clock.getDelta();
+    var delta = clock.getDelta() * spawnerOptions.timeScale;
     if( mesh ) mesh.rotation.y -= 0.5 * delta;
     //moonGlow.rotation.y -= 1.5 * delta;
 
@@ -138,97 +186,47 @@ function render( float ){
     //if( moonGlow.material.uniforms[ "c" ].value < 0 ) 
     //moonGlow.material.uniforms[ "c" ].value = .1;
     
-    light2.position.y += 0.5 * delta;
-    //console.log(light2.position.y)
-    if(light2.position.y > 30){
+    light2.position.y += 2 * delta;
+    moonGlow.position.y = light2.position.y;
+
+    if(light2.position.y > 50){
         light2.position.y = 0; 
     }
+    particleSystem1.rotation.y += 0.01;
+
+    tick += delta;
+
+    options.position.x = Math.sin( tick * spawnerOptions.horizontalSpeed ) * 20;
+    options.position.y = Math.sin( tick * spawnerOptions.verticalSpeed ) * 10;
+    options.position.z = Math.sin( tick * spawnerOptions.horizontalSpeed + spawnerOptions.verticalSpeed ) * 5;
+
+    for ( var x = 0; x < spawnerOptions.spawnRate * delta; x++ ) {
+
+        // Yep, that's really it.   Spawning particles is super cheap, and once you spawn them, the rest of
+        // their lifecycle is handled entirely on the GPU, driven by a time uniform updated below
+
+        particleSystem2.spawnParticle( options );
+
+    }
+    particleSystem2.update( tick );
 
     renderer.render( scene, camera );
     //effect.render( scene, camera );
-    //sendToServer();
 
 }
-
-/*function sendToServer() {
-    var asString = renderer.domElement.toDataURL();
-
-     if (isOpen) {
-         frame++;
-          ws.send(str2ab(frame+asString));
-     }
-}
-
-function str2ab(str) {
-    var buf = new ArrayBuffer(str.length);
-    var bufView = new Uint8Array(buf);
-    for (var i=0, strLen=str.length; i<strLen; i++) {
-        bufView[i] = str.charCodeAt(i);
-    }
-    return buf;
-}*/
 
 function generateWEBM() {
 
-    capturer.stop();
-    download(capturer.save(), "sample", "webm")
+    capturer.start();
     generating = true;
 
-    /*var current = 0;
+    var current = 0;
     var total = 400;
-
-    var canvas = document.createElement( 'canvas' );
-    canvas.width = renderer.domElement.width;
-    canvas.height = renderer.domElement.height;
-
-    var context = canvas.getContext( '2d' );
-
-    var buffer = new Uint8Array( canvas.width * canvas.height * total * 5 );
-    var gif = new GifWriter( buffer, canvas.width, canvas.height, { loop: 0 } );
-
-    var pixels = new Uint8Array( canvas.width * canvas.height );
 
     var addFrame = function () {
 
         render( current / total );
-
-        context.drawImage( renderer.domElement, 0, 0 );
-
-        var data = context.getImageData( 0, 0, canvas.width, canvas.height ).data;
-
-        var palette = [];
-
-        for ( var j = 0, k = 0, jl = data.length; j < jl; j += 4, k ++ ) {
-
-            var r = Math.floor( data[ j + 0 ] * 0.1 ) * 10;
-            var g = Math.floor( data[ j + 1 ] * 0.1 ) * 10;
-            var b = Math.floor( data[ j + 2 ] * 0.1 ) * 10;
-            var color = r << 16 | g << 8 | b << 0;
-
-            var index = palette.indexOf( color );
-
-            if ( index === -1 ) {
-
-                pixels[ k ] = palette.length;
-                palette.push( color );
-
-            } else {
-
-                pixels[ k ] = index;
-
-            }
-
-        }
-
-        // force palette to be power of 2
-
-        var powof2 = 1;
-        while ( powof2 < palette.length ) 
-        powof2 <<= 1;
-        if ( powof2 >= 255 ) powof2 = 1;
-        palette.length = powof2;
-
-        gif.addFrame( 0, 0, canvas.width, canvas.height, pixels, { palette: new Uint32Array( palette ), delay: 5 } );
+        capturer.capture( renderer.domElement );
 
         current ++;
 
@@ -250,25 +248,14 @@ function generateWEBM() {
 
         // return buffer.slice( 0, gif.end() );
 
-        var string = '';
-
-        for ( var i = 0, l = gif.end(); i < l; i ++ ) {
-
-            string += String.fromCharCode( buffer[ i ] )
-
-        }
-
-        var image = document.createElement( 'img' );
-        image.src = 'data:image/gif;base64,' + btoa( string );
-        document.body.appendChild( image );
-
+        capturer.stop();
+        download(capturer.save(), "sample", "webm")
         generating = false;
         animate();
 
     }
 
     addFrame();
-    */
 
 }
 
