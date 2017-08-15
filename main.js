@@ -44,12 +44,16 @@ function init() {
     light2.add( new THREE.Mesh( sphere, new THREE.MeshBasicMaterial( { color: 0x00fff0 } ) ) );
     scene.add( light2 );
 
+    THREE.ImageUtils.crossOrigin = '';
+    var mapOverlay = THREE.ImageUtils.loadTexture("http://thecatapi.com/api/images/get?format=src&type=png")
+    //var mapOverlay = THREE.ImageUtils.loadTexture("textures/perlin-512.png")
+
     var particleCount = 1800,
-        particles = new THREE.SphereGeometry(),
+        particles = new THREE.Geometry(),
         pMaterial = new THREE.PointsMaterial({
             color: 0xFFFFFF,
-            size: 20,
-            map: THREE.ImageUtils.loadTexture("textures/perlin-512.png"),
+            size: 30,
+            map: mapOverlay,
             blending: THREE.AdditiveBlending,
             transparent: true
         });
@@ -81,7 +85,7 @@ function init() {
 
     options = {
         position: new THREE.Vector3(),
-        positionRandomness: .3,
+        positionRandomness: 100,
         velocity: new THREE.Vector3(),
         velocityRandomness: .5,
         color: 0x00fff0, //0xaa88ff,
@@ -196,9 +200,9 @@ function render( float ){
 
     tick += delta;
 
-    options.position.x = Math.sin( tick * spawnerOptions.horizontalSpeed ) * 20;
-    options.position.y = Math.sin( tick * spawnerOptions.verticalSpeed ) * 10;
-    options.position.z = Math.sin( tick * spawnerOptions.horizontalSpeed + spawnerOptions.verticalSpeed ) * 5;
+    //options.position.x = Math.sin( tick * spawnerOptions.horizontalSpeed ) * 20;
+    //options.position.y = Math.sin( tick * spawnerOptions.verticalSpeed ) * 10;
+    //options.position.z = Math.sin( tick * spawnerOptions.horizontalSpeed + spawnerOptions.verticalSpeed ) * 5;
 
     for ( var x = 0; x < spawnerOptions.spawnRate * delta; x++ ) {
 
