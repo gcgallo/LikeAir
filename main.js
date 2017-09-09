@@ -122,7 +122,7 @@ function init() {
         color: 0x00fff0, //0xaa88ff,
         colorRandomness: .2,
         turbulence: 0,
-        lifetime: 100,
+        lifetime: 1,
         size: 30,
         sizeRandomness: 1
     };
