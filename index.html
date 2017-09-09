@@ -16,20 +16,14 @@
         <progress id="progress" value="0" max="1"></progress><br />
         <div id="container"></div>
         <script src="js/three.js"></script>
-        <script src="js/omggif.js"></script>
         <script src="js/randomColor.js"></script>
         <script src="js/dat.gui.min.js"></script>
         <script src="js/Detector.js"></script>
         <script src="js/OrbitControls.js"></script>
         <script src="js/CCapture.all.min.js"></script>
         <script src="js/GPUParticleSystem.js"></script>
-        <script src="js/BinaryLoader.js"></script>
-        <script src="js/gif.js"></script>
-        <script src="js/gif.worker.js"></script>
-        <script src="js/CanvasRenderer.js"></script>
-        <script src="js/Projector.js"></script>
 
-        <!-- ---------------- Custom Shader Code ------------------------ -->
+        <!-- vertex shader -->
         <script id="vertexShader" type="x-shader/x-vertex">
         uniform vec3 viewVector;
         uniform float c;
@@ -47,17 +41,21 @@
 
         <!-- fragment shader a.k.a. pixel shader -->
         <script id="fragmentShader" type="x-shader/x-vertex"> 
-        uniform vec3 glowColor;
+        uniform vec3 pulseColor;
         varying float intensity;
         void main() 
         {
-            vec3 glow = glowColor * intensity;
+            vec3 glow = pulseColor * intensity;
             gl_FragColor = vec4( glow, 1.0 );
         }
         </script>
-        <!-- ---------------------------------------------------------->
 
+        <video id="monitor" autoplay width="160" height="120" style="visibility: hidden; float:left;"></video>
+        <canvas id="videoImage" width="160" height="120" style="visibility: hidden; float:left;"></canvas>
 
+        <!--<script src="webcam_feed.js"></script>-->
+        <script src="generate_video.js"></script>
+        <script src="midi_control.js"></script>
         <script src="main.js"></script>
     </body>
 </html>

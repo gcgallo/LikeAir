@@ -2,41 +2,24 @@ if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
 
 var camera, scene, renderer , tick = 0;
 var olivia_sphere;
-var geometry, material, mesh, particleSystem1, particleSystem2;
+var starSystem, particleSystem;
 var explode=0;
 var pulse=0;
 var options, spawnerOptions;
 var clock = new THREE.Clock();
-var PI = 3.14159; //replace with Math.Pi
-var W = window.innerWidth, H = window.innerHeight;
 var gui = new dat.GUI( { width: 350 } );
-var glow_options; 
+var pulse_options; 
 
-var progress = document.getElementById( 'progress' );
-var generating = false;
-var time = 0;
-var capturer = new CCapture( { format: 'webm' , framerate: 30 } );
+
+var PI = Math.PI;
+var W = window.innerWidth, H = window.innerHeight;
+
+var video, videoImage, videoImageContext, videoTexture;
+
 
 function init() {
 
     var container = document.getElementById( 'container' );
-
-    // JSON loader for exported meshes
-    var loader = new THREE.JSONLoader();
-
-    /* //import blender mesh
-    var callback = function( geometry ) {
-        object = new THREE.Mesh( geometry, new THREE.MeshPhongMaterial( { color: 0x555555, specular: 0x111111, shininess: 50 }  )  );
-        object.scale.x = object.scale.y = object.scale.z = 0.80;
-        scene.add( object );
-    };
-    
-    loader.load( "monkey.json", function ( obj ) {
-        //add the loaded object to the scene
-        object = new THREE.Mesh( obj, new THREE.MeshPhongMaterial( { color: 0x555555, specular: 0x111111, shininess: 50 }  )  );
-        object.scale.x = object.scale.y = object.scale.z = 2;
-        scene.add( object );
-    });*/
 
     camera = new THREE.PerspectiveCamera( 60, W/H, 1, 10000 );
     camera.position.z = 100;
@@ -44,86 +27,93 @@ function init() {
     scene = new THREE.Scene();
     //scene.fog = new THREE.Fog( 0x040306, 1, 1000 );
     scene.add( new THREE.AmbientLight( 0x00020 ) );
+    var loader = new THREE.TextureLoader();
 
-    //geometry = new THREE.CubeGeometry(200, 200, 200);
+    /* VIDEO IMPORT (functionalize and generalize)
+    */
+    video = document.createElement( 'video' );
+    video.src = "media/cops.mp4";
+    video.load(); // must call after setting/changing source
+    video.loop = true;
+    video.play();
+    
+    videoImage = document.getElementById( 'videoImage' );
+    videoImageContext = videoImage.getContext( '2d' );
+    // background color if no video present
+    videoImageContext.fillStyle = '#000000';
+    videoImageContext.fillRect( 0, 0, videoImage.width, videoImage.height );
 
-    //orbiting sphere
-    geometry = new THREE.SphereGeometry(10, 30, 30 );
-    material = new THREE.MeshPhongMaterial( { color: 0x555555, specular: 0x111111, shininess: 50 }  );
-    mesh = new THREE.Mesh(geometry, material);
-    mesh.castShadow = true;
-    scene.add(mesh);
+    videoTexture = new THREE.Texture( videoImage );
+    videoTexture.minFilter = THREE.LinearFilter;
+    videoTexture.magFilter = THREE.LinearFilter;
+    /* END VIDEO IMPORT
+    */
 
-    //rising sphere
+    /* CREATE SCREEN OBJECT
+    */    
+    var movieMaterial = new THREE.MeshBasicMaterial( { map: videoTexture, overdraw: true, side:THREE.DoubleSide, transparent: true, opacity: .5} );
+    // the geometry on which the movie will be displayed;
+    //      movie image will be scaled to fit these dimensions.
+    var movieGeometry = new THREE.PlaneGeometry( 100, 100, 1, 1 );
+    var movieScreen = new THREE.Mesh( movieGeometry, movieMaterial );
+    movieScreen.transparent = true;
+    movieScreen.opacity = .5;
+    movieScreen.position.set(0,0,50);
+    scene.add(movieScreen);
+    /* END SCREEN OBJECT
+    */
+
+    /* CREATE MAIN POINT LIGHT
+    */
     var olivia = new THREE.SphereGeometry( 1, 64, 16 );
     olivia_light = new THREE.PointLight( 0x00fff0, 10, 50 );
     olivia_light.add( new THREE.Mesh( olivia, new THREE.MeshBasicMaterial( { color: 0x00fff0 } ) ) );
     scene.add( olivia_light );
+    /* END MAIN POINT LIGHT
+    */ 
 
+    /* CREATE STAR SYSTEM
+    */
     THREE.TextureLoader.crossOrigin = '';
-    //var mapOverlay = THREE.ImageUtils.loadTexture("http://thecatapi.com/api/images/get?format=src&type=png")
-    //var mapOverlay = THREE.ImageUtils.loadTexture("textures/perlin-512.png")
+    var starCount = 1800;
+    var starShape = new THREE.SphereGeometry( 1, 64, 16 );
 
-    var particleCount = 1800;
-        /*particles = new THREE.Geometry(),
-        pMaterial = new THREE.PointsMaterial({
-            color: 0xFFFFFF,
-            size: 30,
-            map: mapOverlay,
-            blending: THREE.AdditiveBlending,
-            transparent: true
-        });*/
-    
-    var stars = new THREE.SphereGeometry( 1, 64, 16 );
-    var loader = new THREE.TextureLoader();
-    var mapOverlay = loader.load("http://thecatapi.com/api/images/get?format=src&type=png",
-    function ( texture ) {
-        // do something with the texture
-        var material2 = new THREE.MeshBasicMaterial( {
-            map: texture
-         } );
-    
-        for (var p = 0; p < particleCount; p++){ 
+    for (var p = 0; p < starCount; p++){ 
+        // create a star of random color
+        var colors = randomColor({
+           luminosity: 'light',
+           hue: 'blue'
+        });
         
-            // create a particle with random
-            // position values, -250 -> 250
-            var pX = Math.random() * 500 - 250;
-            var pY = Math.random() * 500 - 250;
-            var pZ = Math.random() * 500 - 250;
-              //particle = new THREE.Vector3(pX, pY, pZ);
-            //var colors = randomColor({hue: 'blue', count: 18});
-            var colors = randomColor({
-               luminosity: 'light',
-               hue: 'blue'
-            });
+        // convert to array? and/or merge into a single mesh?
+        stars = new THREE.PointLight( colors, 10, 50 );
+        stars.add( new THREE.Mesh( starShape, new THREE.MeshBasicMaterial( { color: colors} ) ) );
 
-            //var cats = new THREE.PointLight( 0x00fff0, 10, 50 );
-            //cats.add( new THREE.Mesh( sphere, new THREE.MeshBasicMaterial( { color: 0x00fff0 } ) ) ); //new THREE.Mesh( sphere, mapOverlay ));
-            cats = new THREE.PointLight( colors, 10, 50 );
-            cats.add( new THREE.Mesh( stars, new THREE.MeshBasicMaterial( { color: colors} ) ) );
-            //cats = new THREE.Mesh(sphere, material2);
-            cats.position.x = pX;
-            cats.position.y = pY;
-            cats.position.z = pZ;
-            scene.add( cats );
-            // add it to the geometry
-            //particles.vertices.push(particle);
-        }
-    })
+        var pX = Math.random() * 500 - 250; // pre-load random numbers
+        var pY = Math.random() * 500 - 250; // see example in GPU particle system
+        var pZ = Math.random() * 500 - 250;
 
+        stars.position.x = pX;
+        stars.position.y = pY;
+        stars.position.z = pZ;
 
-    /*particleSystem1 = new THREE.Points(
-        particles,
-        pMaterial);
+        var radius = Math.sqrt(pX*pX + pY*pY + pZ*pZ)
+        if(radius < 250) 
+            scene.add( stars );
+    }
+    /* END STAR SYSTEM
+    */
 
-    scene.add(particleSystem1);*/
-
-    particleSystem2 = new THREE.GPUParticleSystem( {
+    /* CREATE PARTICLE SYSTEM
+    */
+    // make less cubical, alter origin? tie to another mesh?
+    particleSystem = new THREE.GPUParticleSystem( {
         maxParticles: 2500000
     } );
 
-    scene.add( particleSystem2 );
+    scene.add( particleSystem );
 
+    // make options controllable from midi
     options = {
         position: new THREE.Vector3(),
         positionRandomness: 50,
@@ -145,15 +135,18 @@ function init() {
     };
 
     gui.add( options, "lifetime", .1, 10 );
+    /* END PARTICLE SYSTEM
+    */
 
-    // create glowly stuff
-    var customMaterial = new THREE.ShaderMaterial( 
+    /* CREATE PULSING SHADER
+    */
+    var pulseMaterial = new THREE.ShaderMaterial( 
     {
         uniforms: 
         { 
-            "c":   { type: "f", value: .1 },
+            "c":   { type: "f", value: .1 }, // what are C and P?
             "p":   { type: "f", value: 6 },
-            glowColor: { type: "c", value: new THREE.Color(0x00fff0) },
+            pulseColor: { type: "c", value: new THREE.Color(0x00fff0) },
             viewVector: { type: "v3", value: camera.position }
         },
         vertexShader:   document.getElementById( 'vertexShader'   ).textContent,
@@ -162,37 +155,59 @@ function init() {
         blending: THREE.AdditiveBlending,
         transparent: true
     }   );
-
-    glow_options = {
+    
+    // add more controllable options?
+    pulse_options = {
         pulse: .01
     };
 
-    gui.add( glow_options, "pulse", .005, .05 );
+    gui.add( pulse_options, "pulse", .005, .025 );
 
-    moonGlow = new THREE.Mesh( olivia.clone(), customMaterial.clone() );
-    moonGlow.position = olivia.position;
-    moonGlow.scale.multiplyScalar(36);
-    scene.add( moonGlow );
+    pulsing = new THREE.Mesh( olivia.clone(), pulseMaterial.clone() );
+    pulsing.position = olivia.position;
+    pulsing.scale.multiplyScalar(36);
+    scene.add( pulsing );
+    /* END PULSING SHADER
+    */
 
-    //renderer = new THREE.WebGLRenderer( { preserveDrawingBuffer: true } );
-    //renderer.setPixelRatio( window.devicePixelRatio );
-    //renderer.setSize( window.innerWidth, window.innerHeight );
-    renderer = new THREE.WebGLRenderer( { antialias: false, preserveDrawingBuffer: true } );
+    /* CONFIG RENDERER
+    */
+    renderer = new THREE.WebGLRenderer( { antialias: false , preserveDrawingBuffer: true} );
     renderer.setSize( W, H );
     //renderer.setClearColor( scene.fog.color );
     renderer.setPixelRatio( window.devicePixelRatio );
-    //document.body.appendChild( renderer.domElement ); 
     container.appendChild( renderer.domElement );
-    //renderer.gammaInput = true;
-    //renderer.gammaOutput = true;
     controls = new THREE.OrbitControls( camera, renderer.domElement );
     controls.enableDamping = true;
     controls.dampingFactor = 0.05;
+    /* END RENDERER
+    */
 
+    /* ADD LISTENERS
+    */ 
+    // rehandle for midi
+    window.addEventListener('keydown', handleKeyDown, false);
+    window.addEventListener('keyup', handleKeyUp, false);
     window.addEventListener( 'resize', onWindowResize, false );
 
 }
 
+/*UTILTY FUNCTIONS
+*/
+function handleKeyDown(event) {
+  if (event.keyCode === 66) { //66 is "b"
+    window.isBDown = true;
+  }
+  if (event.keyCode === 66) { //66 is "b"
+    window.isUDown = true;
+  }
+}
+
+function handleKeyUp(event) {
+  if (event.keyCode === 66) { //66 is "b"
+    window.isBDown = false;
+  }
+}
 
 function onWindowResize() {
 
@@ -202,6 +217,8 @@ function onWindowResize() {
     renderer.setSize( window.innerWidth, window.innerHeight );
 
 }
+/* END UTILTIES
+*/
 
 function animate() {
 
@@ -215,130 +232,75 @@ function animate() {
 
 function render( float ){
 
-    //controls.update();
-
-    // experiment with code from the snippets menu here
-    //camera.position.z = (Math.sin( Date.now() * 0.002 ) * 500) - 3000;
-    //camera.position.y = Math.sin( Date.now() * 0.002 ) * 300;
-    //camera.lookAt(mesh.position);
-    //var delta = clock.getDelta();
 
     var delta = clock.getDelta() * spawnerOptions.timeScale;
 
-    /*//Orbit pattern
-    mesh.rotation.y -= 0.5 * delta;
-    mesh.position.x = Math.sin( time * 0.7 ) * 30;
-    mesh.position.y = Math.cos( time * 0.5 ) * 40;
-    mesh.position.z = Math.cos( time * 0.3 ) * 30;
-    */
+    if (window.isBDown) {
 
-    // quasar effect 
-    //moonGlow.rotation.y -= 1.5 * delta; 
+        pulsing.visible = !pulsing.visible;
 
-    // pulse effect
-    //moonGlow.material.uniforms[ "c" ].value = (Math.sin(time * 3 ) / 25*PI) + PI/240;
+    }
+    // quasar effect (add bool/knob control)
+    //pulsing.rotation.y -= 1.5 * delta; 
+
+    // pulse effect (add bool to switch between sine and linear?)
+    //pulsing.material.uniforms[ "c" ].value = (Math.sin(time * 3 ) / 25*PI) + PI/240;
     if (pulse == 1){
-        moonGlow.material.uniforms[ "c" ].value += glow_options.pulse;
-        if (moonGlow.material.uniforms[ "c" ].value > .13)
+        pulsing.material.uniforms[ "c" ].value += pulse_options.pulse;
+        if (pulsing.material.uniforms[ "c" ].value > .13)
             pulse = 0;
     }else{
-        moonGlow.material.uniforms[ "c" ].value -= glow_options.pulse;
-        if (moonGlow.material.uniforms[ "c" ].value < -.01)
+        pulsing.material.uniforms[ "c" ].value -= pulse_options.pulse;
+        if (pulsing.material.uniforms[ "c" ].value < -.01)
             pulse = 1;
     }
-    console.log(moonGlow.material.uniforms[ "c" ].value)
-    
-    
-    //light2.position.y += 2 * delta;
-    //moonGlow.position.y = light2.position.y;
 
-    if(olivia_light.position.y > 50){
-        olivia_light.position.y = 0; 
-    }
-
-    //particleSystem1.rotation.y += 0.01;
-
-    tick += delta;
-
-    //options.position.x = Math.sin( tick * spawnerOptions.horizontalSpeed ) * 20;
-    //options.position.y = Math.sin( tick * spawnerOptions.verticalSpeed ) * 10;
-    //options.position.z = Math.sin( tick * spawnerOptions.horizontalSpeed + spawnerOptions.verticalSpeed ) * 5;
-    
+    // Inital expansion of particle system 
     if (explode == 1)
         options.positionRandomness -= .5;
     else{
         for ( var x = 0; x < spawnerOptions.spawnRate * delta; x++ ) {
 
-            // Yep, that's really it.   Spawning particles is super cheap, and once you spawn them, the rest of
-            // their lifecycle is handled entirely on the GPU, driven by a time uniform updated below
-
-            particleSystem2.spawnParticle( options );
+            particleSystem.spawnParticle( options );
 
         }
         options.positionRandomness += .5;
         if (options.positionRandomness > 100)
             explode = 1;
     } 
+   
+    /* UPDATE VIDEO 
+    */ 
+    if ( video.readyState === video.HAVE_ENOUGH_DATA ) 
+    {
+        videoImageContext.drawImage( video, 0, 0, videoImage.width, videoImage.height );
+        if ( videoTexture ) 
+            videoTexture.needsUpdate = true;
+    }
+    if( video.readyState === video.HAVE_ENOUGH_DATA ){
+      videoTexture.needsUpdate = true;
+    }
+    /* END VIDEO UPDATE
+    */
 
-    particleSystem2.update( tick );
+    /* START ANIMATION
+
+    */
+    // add switch statement based state machine?
+
+    //olivia_light.position.y += 2 * delta;
+    //pulsing.position.y = light2.position.y;
+
+    if(olivia_light.position.y > 50){
+        olivia_light.position.y = 0; 
+    }
+
+    tick += delta;
+
+    particleSystem.update( tick );
 
     renderer.render( scene, camera );
-    //effect.render( scene, camera );
 
-}
-
-function generateWEBM() {
-
-    capturer.start();
-    generating = true;
-
-    var current = 0;
-    var total = 400;
-
-    var addFrame = function () {
-
-        render( current / total );
-        capturer.capture( renderer.domElement );
-
-        current ++;
-
-        if ( current < total ) {
-
-            setTimeout( addFrame, 0 );
-
-        } else {
-
-            setTimeout( finish, 0 );
-
-        }
-
-        progress.value = current / total;
-
-    }
-
-    var finish = function () {
-
-        // return buffer.slice( 0, gif.end() );
-
-        capturer.stop();
-        download(capturer.save(), "sample", "webm")
-        generating = false;
-        animate();
-
-    }
-
-    addFrame();
-
-}
-
-
-function getRandomColor() {
-  var letters = '0123456789ABCDEF';
-  var color = '#';
-  for (var i = 0; i < 6; i++) {
-    color += letters[Math.floor(Math.random() * 16)];
-  }
-  return color;
 }
 
 init();
