@@ -10,12 +10,12 @@ var clock = new THREE.Clock();
 var gui = new dat.GUI( { width: 350 } );
 var pulse_options; 
 
-
 var PI = Math.PI;
 var W = window.innerWidth, H = window.innerHeight;
 
-var video, videoImage, videoImageContext, videoTexture;
-
+var video = [], videoImage = [], videoImageContext = [], videoTexture = [];
+var vids=0;
+var screen0, screen1;
 
 function init() {
 
@@ -28,39 +28,25 @@ function init() {
     //scene.fog = new THREE.Fog( 0x040306, 1, 1000 );
     scene.add( new THREE.AmbientLight( 0x00020 ) );
     var loader = new THREE.TextureLoader();
+   
+    /* IMPORT VIDEOS HERE
+    */ 
+    var import0 = importVideo("media/cops.mp4", 0);
+    video[0] = import0.video;    
+    videoImage[0] = import0.videoImage;    
+    videoImageContext[0] = import0.videoImageContext;    
+    videoTexture[0] = import0.videoTexture;    
+    screen0 = createScreen(videoTexture[0], 0, 0, 0, 0);
+    scene.add(screen0);
 
-    /* VIDEO IMPORT (functionalize and generalize)
-    */
-    video = document.createElement( 'video' );
-    video.src = "media/cops.mp4";
-    video.load(); // must call after setting/changing source
-    video.loop = true;
-    video.play();
-    
-    videoImage = document.getElementById( 'videoImage' );
-    videoImageContext = videoImage.getContext( '2d' );
-    // background color if no video present
-    videoImageContext.fillStyle = '#000000';
-    videoImageContext.fillRect( 0, 0, videoImage.width, videoImage.height );
-
-    videoTexture = new THREE.Texture( videoImage );
-    videoTexture.minFilter = THREE.LinearFilter;
-    videoTexture.magFilter = THREE.LinearFilter;
-    /* END VIDEO IMPORT
-    */
-
-    /* CREATE SCREEN OBJECT
-    */    
-    var movieMaterial = new THREE.MeshBasicMaterial( { map: videoTexture, overdraw: true, side:THREE.DoubleSide, transparent: true, opacity: .5} );
-    // the geometry on which the movie will be displayed;
-    //      movie image will be scaled to fit these dimensions.
-    var movieGeometry = new THREE.PlaneGeometry( 100, 100, 1, 1 );
-    var movieScreen = new THREE.Mesh( movieGeometry, movieMaterial );
-    movieScreen.transparent = true;
-    movieScreen.opacity = .5;
-    movieScreen.position.set(0,0,50);
-    scene.add(movieScreen);
-    /* END SCREEN OBJECT
+    var import1 = importVideo("sample.webm", 1);
+    video[1] = import1.video;    
+    videoImage[1] = import1.videoImage;    
+    videoImageContext[1] = import1.videoImageContext;    
+    videoTexture[1] = import1.videoTexture;    
+    screen1 = createScreen(videoTexture[1], 1, 0, 0, 0);
+    scene.add(screen1);
+    /* END IMPORT
     */
 
     /* CREATE MAIN POINT LIGHT
@@ -195,18 +181,26 @@ function init() {
 /*UTILTY FUNCTIONS
 */
 function handleKeyDown(event) {
-  if (event.keyCode === 66) { //66 is "b"
-    window.isBDown = true;
-  }
-  if (event.keyCode === 66) { //66 is "b"
-    window.isUDown = true;
-  }
+    if (event.keyCode === 49) {
+        window.is1Down = !window.is1Down;
+    }
+
+    if (event.keyCode === 50) {
+        window.is2Down = !window.is2Down;
+    }
+    console.log(event.keyCode);
+    /*if (event.keyCode === 66) {
+        window.isUDown = true;
+    }*/
 }
 
 function handleKeyUp(event) {
-  if (event.keyCode === 66) { //66 is "b"
-    window.isBDown = false;
-  }
+    if (event.keyCode === 49) { 
+        window.is1Down = false;
+    }
+    if (event.keyCode === 50) { 
+        window.is2Down = false;
+    }
 }
 
 function onWindowResize() {
@@ -216,6 +210,50 @@ function onWindowResize() {
 
     renderer.setSize( window.innerWidth, window.innerHeight );
 
+}
+
+function importVideo(source, index){
+    var videoElement = 'video' + index;
+    console.log(videoElement)
+    var videoImageElement = 'videoImage' + index;
+    console.log(videoImageElement)
+    var video = document.createElement( 'video' );
+    video.id = videoElement
+    video.src = source;
+    video.load(); // must call after setting/changing source
+    video.loop = true;
+    video.play();
+    console.log(video);
+    var videoImage = document.getElementById( videoImageElement );
+    var videoImageContext = videoImage.getContext( '2d' );
+    // background color if no video present
+    videoImageContext.fillStyle = '#000000';
+    videoImageContext.fillRect( 0, 0, videoImage.width, videoImage.height );
+
+    var videoTexture = new THREE.Texture( videoImage );
+    videoTexture.minFilter = THREE.LinearFilter;
+    videoTexture.magFilter = THREE.LinearFilter;
+    console.log(vids);
+    console.log(videoTexture);
+    vids++;
+    return {
+        video: video,
+        videoImage: videoImage,
+        videoImageContext: videoImageContext,
+        videoTexture: videoTexture};
+}
+
+function createScreen(texture, index, position_x, position_y, position_z ){
+    var movieMaterial = new THREE.MeshBasicMaterial( { map: texture, overdraw: true, side:THREE.DoubleSide, transparent: true, opacity: .5} );
+    // the geometry on which the movie will be displayed;
+    //      movie image will be scaled to fit these dimensions.
+    var movieGeometry = new THREE.PlaneGeometry( 100, 100, 1, 1 );
+    var movieScreen = new THREE.Mesh( movieGeometry, movieMaterial );
+    movieScreen.transparent = true;
+    movieScreen.opacity = .5;
+    movieScreen.position.set(position_x, position_y, position_z);
+    return movieScreen;
+    //scene.add(movieScreen);
 }
 /* END UTILTIES
 */
@@ -235,11 +273,18 @@ function render( float ){
 
     var delta = clock.getDelta() * spawnerOptions.timeScale;
 
-    if (window.isBDown) {
+    if (pad1pressed || window.is1Down) {
 
-        pulsing.visible = !pulsing.visible;
+        screen0.visible = !screen0.visible;
 
     }
+
+    if (pad2pressed || window.is2Down) {
+
+        screen1.visible = !screen1.visible;
+
+    }
+
     // quasar effect (add bool/knob control)
     //pulsing.rotation.y -= 1.5 * delta; 
 
@@ -271,14 +316,16 @@ function render( float ){
    
     /* UPDATE VIDEO 
     */ 
-    if ( video.readyState === video.HAVE_ENOUGH_DATA ) 
-    {
-        videoImageContext.drawImage( video, 0, 0, videoImage.width, videoImage.height );
-        if ( videoTexture ) 
-            videoTexture.needsUpdate = true;
-    }
-    if( video.readyState === video.HAVE_ENOUGH_DATA ){
-      videoTexture.needsUpdate = true;
+    for (var i = 0; i < video.length ; i++){
+        if ( video[i].readyState === video[i].HAVE_ENOUGH_DATA ) 
+        {
+            videoImageContext[i].drawImage( video[i], 0, 0, videoImage[i].width, videoImage[i].height );
+            if ( videoTexture[i] ) 
+                videoTexture[i].needsUpdate = true;
+        }
+        if( video[i].readyState === video[i].HAVE_ENOUGH_DATA ){
+          videoTexture[i].needsUpdate = true;
+        }
     }
     /* END VIDEO UPDATE
     */

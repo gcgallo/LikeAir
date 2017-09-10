@@ -6,6 +6,9 @@ if (navigator.requestMIDIAccess) {
   console.log("Web MIDI API not supported!");
 }
 
+var pad1pressed = false;
+var pad2pressed = false;
+
 // Function executed on successful connection
 function onSuccess(interface) {
 
@@ -47,6 +50,12 @@ function onSuccess(interface) {
 
 function onMIDIMessage (message) {
     console.log(message.data);
+    if(message.data[1] == 44){
+        pad1pressed = !pad1pressed;
+    }
+    if(message.data[1] == 45){
+        pad2pressed = !pad2pressed;
+    }
 }
 
 // Function executed on failed connection
