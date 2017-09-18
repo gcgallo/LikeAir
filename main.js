@@ -15,7 +15,7 @@ var W = window.innerWidth, H = window.innerHeight;
 
 var video = [], videoImage = [], videoImageContext = [], videoTexture = [];
 var vids=0;
-var screen0, screen1;
+var screen0, screen1, screen2;
 
 function init() {
 
@@ -30,22 +30,42 @@ function init() {
     var loader = new THREE.TextureLoader();
    
     /* IMPORT VIDEOS HERE
-    */ 
+    */ // this could be functionalized further
     var import0 = importVideo("media/cops.mp4", 0);
     video[0] = import0.video;    
     videoImage[0] = import0.videoImage;    
     videoImageContext[0] = import0.videoImageContext;    
     videoTexture[0] = import0.videoTexture;    
     screen0 = createScreen(videoTexture[0], 0, 0, 0, 0);
+    //screen0.visible = 1;
     scene.add(screen0);
 
-    var import1 = importVideo("sample.webm", 1);
+    var import1 = importVideo("media/resist.mp4", 1);
     video[1] = import1.video;    
     videoImage[1] = import1.videoImage;    
     videoImageContext[1] = import1.videoImageContext;    
     videoTexture[1] = import1.videoTexture;    
     screen1 = createScreen(videoTexture[1], 1, 0, 0, 0);
+    screen1.visible = false;
     scene.add(screen1);
+
+    var import2 = importVideo("media/waterss.mp4", 2);
+    video[2] = import2.video;    
+    videoImage[2] = import2.videoImage;    
+    videoImageContext[2] = import2.videoImageContext;    
+    videoTexture[2] = import2.videoTexture;    
+    screen2 = createScreen(videoTexture[2], 2, 0, 0, 0);
+    screen2.visible = false;
+    scene.add(screen2);
+
+    /*var import3 = importVideo("media/water.mp4", 3);
+    video[3] = import3.video;    
+    videoImage[3] = import3.videoImage;    
+    videoImageContext[3] = import3.videoImageContext;    
+    videoTexture[3] = import3.videoTexture;    
+    screen3 = createScreen(videoTexture[3], 3, 0, 0, 0);
+    screen3.visible = false;
+    scene.add(screen3);*/
     /* END IMPORT
     */
 
@@ -142,12 +162,18 @@ function init() {
         transparent: true
     }   );
     
+    //knob1value = .01
+    
     // add more controllable options?
     pulse_options = {
-        pulse: .01
+        pulse: .01, 
+        min: .005,
+        max: .05
     };
 
-    gui.add( pulse_options, "pulse", .005, .025 );
+    knob1value = pulse_options.pulse; 
+
+    gui.add( pulse_options, "pulse", pulse_options.min, pulse_options.max ).listen();
 
     pulsing = new THREE.Mesh( olivia.clone(), pulseMaterial.clone() );
     pulsing.position = olivia.position;
@@ -184,14 +210,12 @@ function handleKeyDown(event) {
     if (event.keyCode === 49) {
         window.is1Down = !window.is1Down;
     }
-
     if (event.keyCode === 50) {
         window.is2Down = !window.is2Down;
     }
-    console.log(event.keyCode);
-    /*if (event.keyCode === 66) {
-        window.isUDown = true;
-    }*/
+    if (event.keyCode === 51) {
+        window.is3Down = !window.is3Down;
+    }
 }
 
 function handleKeyUp(event) {
@@ -200,6 +224,9 @@ function handleKeyUp(event) {
     }
     if (event.keyCode === 50) { 
         window.is2Down = false;
+    }
+    if (event.keyCode === 51) { 
+        window.is3Down = false;
     }
 }
 
@@ -246,14 +273,13 @@ function importVideo(source, index){
 function createScreen(texture, index, position_x, position_y, position_z ){
     var movieMaterial = new THREE.MeshBasicMaterial( { map: texture, overdraw: true, side:THREE.DoubleSide, transparent: true, opacity: .5} );
     // the geometry on which the movie will be displayed;
-    //      movie image will be scaled to fit these dimensions.
+    //  movie image will be scaled to fit these dimensions.
     var movieGeometry = new THREE.PlaneGeometry( 100, 100, 1, 1 );
     var movieScreen = new THREE.Mesh( movieGeometry, movieMaterial );
     movieScreen.transparent = true;
     movieScreen.opacity = .5;
     movieScreen.position.set(position_x, position_y, position_z);
     return movieScreen;
-    //scene.add(movieScreen);
 }
 /* END UTILTIES
 */
@@ -273,20 +299,35 @@ function render( float ){
 
     var delta = clock.getDelta() * spawnerOptions.timeScale;
 
-    if (pad1pressed || window.is1Down) {
-
+    if (pad1.pressed || window.is1Down) {
         screen0.visible = !screen0.visible;
-
+    }
+    if (pad2.pressed || window.is2Down) {
+        screen1.visible = !screen1.visible;
+    }
+    if (pad3.pressed || window.is3Down) {
+        screen2.visible = !screen2.visible;
     }
 
-    if (pad2pressed || window.is2Down) {
-
-        screen1.visible = !screen1.visible;
-
+    if(knob1.turned){
+        pulse_options.pulse = knob1.value*(pulse_options.max-pulse_options.min)+pulse_options.min;
+        knob1turned = false;
+        console.log(pulse_options.pulse);
     }
 
     // quasar effect (add bool/knob control)
-    //pulsing.rotation.y -= 1.5 * delta; 
+    if(key.C1.pressed){ 
+        pulsing.rotation.y -= 20 * delta; 
+    }
+    if(key.C1SH.pressed){ 
+        pulsing.rotation.y += 20 * delta; 
+    }
+    if(key.D1.pressed){ 
+        pulsing.rotation.x -= 20 * delta; 
+    }
+    if(key.D1SH.pressed){ 
+        pulsing.rotation.x += 20 * delta; 
+    }
 
     // pulse effect (add bool to switch between sine and linear?)
     //pulsing.material.uniforms[ "c" ].value = (Math.sin(time * 3 ) / 25*PI) + PI/240;
@@ -300,19 +341,22 @@ function render( float ){
             pulse = 1;
     }
 
+    //controls to modify options
+    particleSystem.spawnParticle( options );
+
     // Inital expansion of particle system 
-    if (explode == 1)
+    /*if (explode == 1) {
         options.positionRandomness -= .5;
+    }
     else{
         for ( var x = 0; x < spawnerOptions.spawnRate * delta; x++ ) {
 
-            particleSystem.spawnParticle( options );
 
         }
         options.positionRandomness += .5;
         if (options.positionRandomness > 100)
             explode = 1;
-    } 
+    }*/ 
    
     /* UPDATE VIDEO 
     */ 
