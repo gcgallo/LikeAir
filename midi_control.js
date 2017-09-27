@@ -17,7 +17,7 @@ var key = {
         D1SH: { id: 51, pressed: false, value: 0 }
 };
 
-// keys and pads overload? same notes? hmmm
+// keys and pads overloaded? same notes? hmmm
             
 var pad1 = { id: 44, pressed: false, value: 0 },
     pad2 = { id: 45, pressed: false, value: 0 },
@@ -30,26 +30,12 @@ var pad1 = { id: 44, pressed: false, value: 0 },
 
 var knob1 = { id: 5, turned: false, value: 0 },
     knob2 = { id: 6, turned: false, value: 0 },
-    knob3 = { id: 7, turned: false, value: 0 };
-    knob3 = { id: 7, turned: false, value: 0 };
-
-/*var keyC1id = 48;
-    keyCSH1id = 49;
-    keyD1id = 50;
-    keyDSH1id = 51;*/
-
-/*var pad1pressed = false;
-var pad2pressed = false;
-var pad3pressed = false;
-var pad4pressed = false;*/
-
-//var knob1value;
-//var knob1turned = false;
-
-//var keyC1pressed = false;
-//var keyCSH1pressed = false;
-//var keyD1pressed = false;
-//var keyDSH1pressed = false;
+    knob3 = { id: 7, turned: false, value: 0 },
+    knob4 = { id: 8, turned: false, value: 0 },
+    knob5 = { id: 1, turned: false, value: 0 }
+    knob6 = { id: 2, turned: false, value: 0 }
+    knob7 = { id: 3, turned: false, value: 0 }
+    knob8 = { id: 4, turned: false, value: 0 };
 
 // Function executed on successful connection
 function onSuccess(interface) {
@@ -63,44 +49,80 @@ function onSuccess(interface) {
         input.value.onmidimessage = onMIDIMessage;
     }
 }
-
+var waitingMIDI = false;
 function onMIDIMessage (message) {
     console.log(message.data);
     var message_type = message.data[0];
     var message_id = message.data[1];
     var message_value = message.data[2];
+    if (!waitingMIDI){ 
+        waitingMIDI = true;
+        switch(message_id){
+            case pad1.id:
+                pad1.pressed = !pad1.pressed;
+                if (message_type==144){
+                    pad1.value = (message_value/128);
+                }
+            break; 
+            case pad2.id:
+                pad2.pressed = !pad2.pressed;
+            break; 
+            case pad3.id:
+                pad3.pressed = !pad3.pressed;
+            break; 
+            case pad4.id:
+                pad4.pressed = !pad4.pressed;
+            break; 
 
-    switch(message_id){
-        case pad1.id:
-            pad1.pressed = !pad1.pressed;
-        break; 
-        case pad2.id:
-            pad2.pressed = !pad2.pressed;
-        break; 
-        case pad3.id:
-            pad3.pressed = !pad3.pressed;
-        break; 
-        case pad4.id:
-            pad4.pressed = !pad4.pressed;
-        break; 
+            //Knob cases
+            case knob1.id:
+                knob1.value = (message_value/128);
+                knob1.turned = true; 
+            break;
+            case knob2.id:
+                knob2.value = (message_value/128);
+                knob2.turned = true; 
+            break;
+            case knob3.id:
+                knob3.value = (message_value/128);
+                knob3.turned = true; 
+            break;
+            case knob4.id:
+                knob4.value = (message_value/128);
+                knob4.turned = true; 
+            break;
+            case knob5.id:
+                knob5.value = (message_value/128);
+                knob5.turned = true; 
+            break;
+            case knob6.id:
+                knob6.value = (message_value/128);
+                knob6.turned = true; 
+            break;
+            case knob7.id:
+                knob7.value = (message_value/128);
+                knob7.turned = true; 
+            break;
+            case knob8.id:
+                knob8.value = (message_value/128);
+                knob8.turned = true; 
+            break;
 
-        case knob1.id:
-            knob1.value = (message_value/128);
-            knob1.turned = true; 
-        break;
 
-        case key.C1.id:
-            key.C1.pressed = keyboardPress(message_type)
-        break;
-        case key.C1SH.id:
-            key.C1SH.pressed = keyboardPress(message_type)
-        break;
-        case key.D1.id:
-            key.D1.pressed = keyboardPress(message_type)
-        break;
-        case key.D1SH.id:
-            key.D1SH.pressed = keyboardPress(message_type)
-        break;
+            case key.C1.id:
+                key.C1.pressed = keyboardPress(message_type)
+            break;
+            case key.C1SH.id:
+                key.C1SH.pressed = keyboardPress(message_type)
+            break;
+            case key.D1.id:
+                key.D1.pressed = keyboardPress(message_type)
+            break;
+            case key.D1SH.id:
+                key.D1SH.pressed = keyboardPress(message_type)
+            break;
+        }
+        setTimeout(function() { waitingMIDI = false; }, 300);
     }
 }
 

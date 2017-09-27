@@ -17,6 +17,10 @@ var video = [], videoImage = [], videoImageContext = [], videoTexture = [];
 var vids=0;
 var screen0, screen1, screen2;
 
+var mixer, loader;
+
+var object;
+
 function init() {
 
     var container = document.getElementById( 'container' );
@@ -25,9 +29,32 @@ function init() {
     camera.position.z = 100;
 
     scene = new THREE.Scene();
+
+    /*loader = new THREE.JSONLoader();
+
+    loader.load( "media/monkey.json", function ( obj ) {
+        //add the loaded object to the scene
+        object = new THREE.Mesh( obj, new THREE.MeshPhongMaterial( { color: 0x555555, specular: 0x111111, shininess: 50 }  )  );
+        object.scale.x = object.scale.y = object.scale.z = 2;
+        scene.add( object );
+    }, 
+
+    // Function called when download progresses
+    function ( xhr ) {
+        console.log( (xhr.loaded / xhr.total * 100) + '% loaded' );
+    },
+
+    // Function called when download errors
+    function ( xhr ) {
+        console.error( 'An error happened' );
+    }
+
+    );*/
+
+    
     //scene.fog = new THREE.Fog( 0x040306, 1, 1000 );
     scene.add( new THREE.AmbientLight( 0x00020 ) );
-    var loader = new THREE.TextureLoader();
+    //var loader = new THREE.TextureLoader();
    
     /* IMPORT VIDEOS HERE
     */ // this could be functionalized further
@@ -37,7 +64,7 @@ function init() {
     videoImageContext[0] = import0.videoImageContext;    
     videoTexture[0] = import0.videoTexture;    
     screen0 = createScreen(videoTexture[0], 0, 0, 0, 0);
-    //screen0.visible = 1;
+    screen0.visible = false;
     scene.add(screen0);
 
     var import1 = importVideo("media/resist.mp4", 1);
@@ -49,7 +76,7 @@ function init() {
     screen1.visible = false;
     scene.add(screen1);
 
-    var import2 = importVideo("media/waterss.mp4", 2);
+    var import2 = importVideo("media/waters.mp4", 2);
     video[2] = import2.video;    
     videoImage[2] = import2.videoImage;    
     videoImageContext[2] = import2.videoImageContext;    
@@ -168,12 +195,14 @@ function init() {
     pulse_options = {
         pulse: .01, 
         min: .005,
-        max: .05
+        max: .05,
+        size: 50
     };
 
     knob1value = pulse_options.pulse; 
 
     gui.add( pulse_options, "pulse", pulse_options.min, pulse_options.max ).listen();
+    gui.add( pulse_options, "size", 0, 99 ).listen();
 
     pulsing = new THREE.Mesh( olivia.clone(), pulseMaterial.clone() );
     pulsing.position = olivia.position;
@@ -184,7 +213,7 @@ function init() {
 
     /* CONFIG RENDERER
     */
-    renderer = new THREE.WebGLRenderer( { antialias: false , preserveDrawingBuffer: true} );
+    renderer = new THREE.WebGLRenderer( { antialias: false , preserveDrawingBuffer: true, alpha: true} );
     renderer.setSize( W, H );
     //renderer.setClearColor( scene.fog.color );
     renderer.setPixelRatio( window.devicePixelRatio );
@@ -193,35 +222,44 @@ function init() {
     controls.enableDamping = true;
     controls.dampingFactor = 0.05;
     /* END RENDERER
+
     */
+        // Load a scene with objects, lights and camera from a JSON file
+    
 
     /* ADD LISTENERS
     */ 
     // rehandle for midi
     window.addEventListener('keydown', handleKeyDown, false);
-    window.addEventListener('keyup', handleKeyUp, false);
+    //window.addEventListener('keyup', handleKeyUp, false);
     window.addEventListener( 'resize', onWindowResize, false );
 
 }
 
 /*UTILTY FUNCTIONS
 */
+var waitingDown = false;
+var waitingUp = false;
 function handleKeyDown(event) {
-    if (event.keyCode === 49) {
-        window.is1Down = !window.is1Down;
-    }
-    if (event.keyCode === 50) {
-        window.is2Down = !window.is2Down;
-    }
-    if (event.keyCode === 51) {
-        window.is3Down = !window.is3Down;
+    if (! waitingDown ){ 
+        waitingDown = true;
+        if (event.keyCode === 49) {
+            window.is1Down = !window.is1Down;
+        }
+        if (event.keyCode === 50) {
+            window.is2Down = !window.is2Down;
+        }
+        if (event.keyCode === 51) {
+            window.is3Down = !window.is3Down;
+        }
+        setTimeout(function () { waitingDown = false; }, 300);
     }
 }
 
 function handleKeyUp(event) {
-    if (event.keyCode === 49) { 
+    /*if (event.keyCode === 49) { 
         window.is1Down = false;
-    }
+    }*/
     if (event.keyCode === 50) { 
         window.is2Down = false;
     }
@@ -239,47 +277,30 @@ function onWindowResize() {
 
 }
 
-function importVideo(source, index){
-    var videoElement = 'video' + index;
-    console.log(videoElement)
-    var videoImageElement = 'videoImage' + index;
-    console.log(videoImageElement)
-    var video = document.createElement( 'video' );
-    video.id = videoElement
-    video.src = source;
-    video.load(); // must call after setting/changing source
-    video.loop = true;
-    video.play();
-    console.log(video);
-    var videoImage = document.getElementById( videoImageElement );
-    var videoImageContext = videoImage.getContext( '2d' );
-    // background color if no video present
-    videoImageContext.fillStyle = '#000000';
-    videoImageContext.fillRect( 0, 0, videoImage.width, videoImage.height );
 
-    var videoTexture = new THREE.Texture( videoImage );
-    videoTexture.minFilter = THREE.LinearFilter;
-    videoTexture.magFilter = THREE.LinearFilter;
-    console.log(vids);
-    console.log(videoTexture);
-    vids++;
-    return {
-        video: video,
-        videoImage: videoImage,
-        videoImageContext: videoImageContext,
-        videoTexture: videoTexture};
+function ease( control, target, easing ){
+    var dx = control-target;
+    target += dx * easing;
+    return target; 
 }
 
-function createScreen(texture, index, position_x, position_y, position_z ){
-    var movieMaterial = new THREE.MeshBasicMaterial( { map: texture, overdraw: true, side:THREE.DoubleSide, transparent: true, opacity: .5} );
-    // the geometry on which the movie will be displayed;
-    //  movie image will be scaled to fit these dimensions.
-    var movieGeometry = new THREE.PlaneGeometry( 100, 100, 1, 1 );
-    var movieScreen = new THREE.Mesh( movieGeometry, movieMaterial );
-    movieScreen.transparent = true;
-    movieScreen.opacity = .5;
-    movieScreen.position.set(position_x, position_y, position_z);
-    return movieScreen;
+var fade_in;
+var fade_out;
+function fadeIn(screen, interval){
+    screen.material.opacity = 0;
+    fade_in = setInterval(
+        function(){ 
+            screen.material.opacity += .05;
+        },
+    interval);
+}
+function fadeOut(screen, interval){
+    //screen.material.opacity = 0;
+    fade_out = setInterval(
+        function(){ 
+            screen.material.opacity -= .05;
+        },
+    interval);
 }
 /* END UTILTIES
 */
@@ -294,26 +315,65 @@ function animate() {
 
 }
 
+
 function render( float ){
 
 
     var delta = clock.getDelta() * spawnerOptions.timeScale;
 
+    // figure a better fallback method
+    //screen0.visible = ;
+
     if (pad1.pressed || window.is1Down) {
+
+        if(screen0.visible)
+            fadeOut(screen0, 500/pad1.value);
+        else
+            fadeIn(screen0, 500/pad1.value);
+
         screen0.visible = !screen0.visible;
+        pad1.pressed = false;
+        window.is1Down = false;
+
     }
-    if (pad2.pressed || window.is2Down) {
-        screen1.visible = !screen1.visible;
-    }
-    if (pad3.pressed || window.is3Down) {
-        screen2.visible = !screen2.visible;
+    // this seems bad or lazy
+    if(screen0.material.opacity > .5)
+        clearInterval(fade_in);
+    if(screen0.material.opacity < 0)
+        clearInterval(fade_out);
+
+    console.log(screen0.material.opacity);
+
+    screen1.visible = pad2.pressed || window.is2Down;
+    screen2.visible = pad3.pressed || window.is3Down;
+
+    //fix so nob doesn't stay always on
+    if(knob1.turned){
+        screen0.material.opacity = ease(knob1.value, screen0.material.opacity, .1);
+        setTimeout(function(){ knob1.turned = false}, 2000); //lazy, but works
     }
 
-    if(knob1.turned){
-        pulse_options.pulse = knob1.value*(pulse_options.max-pulse_options.min)+pulse_options.min;
-        knob1turned = false;
-        console.log(pulse_options.pulse);
+    if(knob2.turned){
+        screen1.material.opacity = ease(knob2.value, screen1.material.opacity, .1);
+        setTimeout(function(){ knob2.turned = false}, 2000);
     }
+
+    if(knob3.turned){
+        screen2.material.opacity = ease(knob3.value, screen2.material.opacity, .1);
+        setTimeout(function(){ knob3.turned = false}, 2000);
+    }
+
+    if(knob5.turned){
+        var range = knob5.value*(pulse_options.max-pulse_options.min)+pulse_options.min;
+        pulse_options.pulse = ease(range, pulse_options.pulse, .1)
+    }
+    
+    if(knob6.turned){
+        pulse_options.size = ease(knob6.value*100, pulse_options.size, .1)
+        pulsing.scale.x = pulse_options.size;
+        pulsing.scale.y = pulse_options.size;
+        pulsing.scale.z = pulse_options.size;
+    }    
 
     // quasar effect (add bool/knob control)
     if(key.C1.pressed){ 
