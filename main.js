@@ -7,7 +7,8 @@ var explode=0;
 var pulse=0;
 var options, spawnerOptions;
 var clock = new THREE.Clock();
-var gui = new dat.GUI( { width: 350 } );
+var gui = new dat.GUI( { width: 350, autoPlace: false } );
+
 var pulse_options; 
 
 var PI = Math.PI;
@@ -29,6 +30,11 @@ function init() {
     camera.position.z = 100;
 
     scene = new THREE.Scene();
+
+    gui.domElement.id = 'gui';
+    
+    /*var customContainer = document.getElementById('my-gui-container');
+    customContainer.appendChild(gui.domElement);*/
 
     /*loader = new THREE.JSONLoader();
 
@@ -199,7 +205,7 @@ function init() {
         size: 50
     };
 
-    knob1value = pulse_options.pulse; 
+    //knob1value = pulse_options.pulse; 
 
     gui.add( pulse_options, "pulse", pulse_options.min, pulse_options.max ).listen();
     gui.add( pulse_options, "size", 0, 99 ).listen();
@@ -284,6 +290,7 @@ function ease( control, target, easing ){
     return target; 
 }
 
+// tune fade in/out
 var fade_in;
 var fade_out;
 function fadeIn(screen, interval){
@@ -302,6 +309,27 @@ function fadeOut(screen, interval){
         },
     interval);
 }
+
+function screenSwitch(control, screen){
+    if (control.pressed || window.is1Down) {
+
+        if(screen.visible){
+            fadeOut(screen, 500/control.value);
+        }else{
+            fadeIn(screen, 500/control.value);
+            screen.visible = true;
+        }
+        control.pressed = false;
+        //window.is1Down = false;
+    }
+    // this is bad and lazy, time out instead?
+    if(screen.material.opacity > .5)
+        clearInterval(fade_in);
+    if(screen.material.opacity < 0){
+        clearInterval(fade_out);
+        screen.visible = false;
+    }
+}
 /* END UTILTIES
 */
 
@@ -315,79 +343,66 @@ function animate() {
 
 }
 
+var press_length = 0;
 
 function render( float ){
 
 
     var delta = clock.getDelta() * spawnerOptions.timeScale;
 
-    // figure a better fallback method
-    //screen0.visible = ;
+    // achange screen numbering
+    screenSwitch(pad.one, screen0);
+    screenSwitch(pad.two, screen1);
+    screenSwitch(pad.thr, screen2);
+    //screenSwitch(pad.fur, screen3);
 
-    if (pad1.pressed || window.is1Down) {
+    console.log(screen1.material.opacity);
 
-        if(screen0.visible)
-            fadeOut(screen0, 500/pad1.value);
-        else
-            fadeIn(screen0, 500/pad1.value);
-
-        screen0.visible = !screen0.visible;
-        pad1.pressed = false;
-        window.is1Down = false;
-
-    }
-    // this seems bad or lazy
-    if(screen0.material.opacity > .5)
-        clearInterval(fade_in);
-    if(screen0.material.opacity < 0)
-        clearInterval(fade_out);
-
-    console.log(screen0.material.opacity);
-
-    screen1.visible = pad2.pressed || window.is2Down;
-    screen2.visible = pad3.pressed || window.is3Down;
-
-    //fix so nob doesn't stay always on
-    if(knob1.turned){
-        screen0.material.opacity = ease(knob1.value, screen0.material.opacity, .1);
-        setTimeout(function(){ knob1.turned = false}, 2000); //lazy, but works
+    if(knob.one.turned){
+        screen0.material.opacity = ease(knob.one.value, screen0.material.opacity, .1);
+        //setTimeout(function(){ knob.one.turned = false}, 2000); //moved to midi_control
     }
 
-    if(knob2.turned){
-        screen1.material.opacity = ease(knob2.value, screen1.material.opacity, .1);
-        setTimeout(function(){ knob2.turned = false}, 2000);
+    if(knob.two.turned){
+        screen1.material.opacity = ease(knob.two.value, screen1.material.opacity, .1);
     }
 
-    if(knob3.turned){
-        screen2.material.opacity = ease(knob3.value, screen2.material.opacity, .1);
-        setTimeout(function(){ knob3.turned = false}, 2000);
+    if(knob.thr.turned){
+        screen2.material.opacity = ease(knob.thr.value, screen2.material.opacity, .1);
     }
 
-    if(knob5.turned){
-        var range = knob5.value*(pulse_options.max-pulse_options.min)+pulse_options.min;
-        pulse_options.pulse = ease(range, pulse_options.pulse, .1)
+    if(knob.fve.turned){
+        var range = knob.fve.value*(pulse_options.max-pulse_options.min)+pulse_options.min;
+        pulse_options.pulse = ease(range, pulse_options.pulse, .1);
     }
     
-    if(knob6.turned){
-        pulse_options.size = ease(knob6.value*100, pulse_options.size, .1)
+    if(knob.six.turned){
+        pulse_options.size = ease(knob.six.value*100, pulse_options.size, .01)
         pulsing.scale.x = pulse_options.size;
         pulsing.scale.y = pulse_options.size;
         pulsing.scale.z = pulse_options.size;
     }    
 
     // quasar effect (add bool/knob control)
-    if(key.C1.pressed){ 
+    if(octave1.C.pressed){ 
         pulsing.rotation.y -= 20 * delta; 
     }
-    if(key.C1SH.pressed){ 
+    if(octave1.Csh.pressed){ 
         pulsing.rotation.y += 20 * delta; 
     }
-    if(key.D1.pressed){ 
+    if(octave1.D.pressed){ 
         pulsing.rotation.x -= 20 * delta; 
     }
-    if(key.D1SH.pressed){ 
+    if(octave1.Dsh.pressed){ 
         pulsing.rotation.x += 20 * delta; 
     }
+
+    if(octave1.E.pressed){
+        press_length += .5; 
+    }
+    olivia_light.position.y = ease(press_length, olivia_light.position.y, .1 );
+    console.log(olivia_light.position.y);
+    console.log(press_length);
 
     // pulse effect (add bool to switch between sine and linear?)
     //pulsing.material.uniforms[ "c" ].value = (Math.sin(time * 3 ) / 25*PI) + PI/240;
@@ -442,9 +457,7 @@ function render( float ){
     //olivia_light.position.y += 2 * delta;
     //pulsing.position.y = light2.position.y;
 
-    if(olivia_light.position.y > 50){
-        olivia_light.position.y = 0; 
-    }
+    
 
     tick += delta;
 

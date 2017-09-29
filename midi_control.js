@@ -6,36 +6,63 @@ if (navigator.requestMIDIAccess) {
   console.log("Web MIDI API not supported!");
 }
 
-var key_down = 144,
+var key_down = 144, // midi code for up/down event type
     key_up = 128;
 
 // convert keyboard to JSON object
-var key = { 
-        C1: { id: 48, pressed: false, value: 0 },
-        C1SH: { id: 49, pressed: false, value: 0 },
-        D1: { id: 50, pressed: false, value: 0 },
-        D1SH: { id: 51, pressed: false, value: 0 }
+var octave1 = { 
+        C: { id: 48, pressed: false, value: 0 },
+        Csh: { id: 49, pressed: false, value: 0 },
+        D: { id: 50, pressed: false, value: 0 },
+        Dsh: { id: 51, pressed: false, value: 0 },
+        E: { id: 52, pressed: false, value: 0 },
+        F: { id: 53, pressed: false, value: 0 },
+        Fsh: { id: 54, pressed: false, value: 0 },
+        G: { id: 55, pressed: false, value: 0 },
+        Gsh: { id: 56, pressed: false, value: 0 },
+        A: { id: 57, pressed: false, value: 0 },
+        Ash: { id: 58, pressed: false, value: 0 },
+        B: { id: 59, pressed: false, value: 0 }
+};
+
+var octave2 = { 
+        C: { id: 60, pressed: false, value: 0 },
+        Csh: { id: 61, pressed: false, value: 0 },
+        D: { id: 62, pressed: false, value: 0 },
+        Dsh: { id: 63, pressed: false, value: 0 },
+        E: { id: 64, pressed: false, value: 0 },
+        F: { id: 65, pressed: false, value: 0 },
+        Fsh: { id: 66, pressed: false, value: 0 },
+        G: { id: 67, pressed: false, value: 0 },
+        Gsh: { id: 68, pressed: false, value: 0 },
+        A: { id: 69, pressed: false, value: 0 },
+        Ash: { id: 70, pressed: false, value: 0 },
+        B: { id: 71, pressed: false, value: 0 }
 };
 
 // keys and pads overloaded? same notes? hmmm
             
-var pad1 = { id: 44, pressed: false, value: 0 },
-    pad2 = { id: 45, pressed: false, value: 0 },
-    pad3 = { id: 46, pressed: false, value: 0 },
-    pad4 = { id: 47, pressed: false, value: 0 },
-    pad5 = { id: 48, pressed: false, value: 0 },
-    pad6 = { id: 49, pressed: false, value: 0 },
-    pad7 = { id: 50, pressed: false, value: 0 }, 
-    pad8 = { id: 51, pressed: false, value: 0 };
+var pad = {
+        one: { id: 44, pressed: false, value: 0 },
+        two: { id: 45, pressed: false, value: 0 },
+        thr: { id: 46, pressed: false, value: 0 },
+        fur: { id: 47, pressed: false, value: 0 },
+        fve: { id: 48, pressed: false, value: 0 }, //overload starts here
+        six: { id: 49, pressed: false, value: 0 },
+        svn: { id: 50, pressed: false, value: 0 }, 
+        eht: { id: 51, pressed: false, value: 0 }
+};
 
-var knob1 = { id: 5, turned: false, value: 0 },
-    knob2 = { id: 6, turned: false, value: 0 },
-    knob3 = { id: 7, turned: false, value: 0 },
-    knob4 = { id: 8, turned: false, value: 0 },
-    knob5 = { id: 1, turned: false, value: 0 }
-    knob6 = { id: 2, turned: false, value: 0 }
-    knob7 = { id: 3, turned: false, value: 0 }
-    knob8 = { id: 4, turned: false, value: 0 };
+var knob = {
+        one: { id: 5, turned: false, value: 0 },
+        two: { id: 6, turned: false, value: 0 },
+        thr: { id: 7, turned: false, value: 0 },
+        fur: { id: 8, turned: false, value: 0 },
+        fve: { id: 1, turned: false, value: 0 },
+        six: { id: 2, turned: false, value: 0 },
+        svn: { id: 3, turned: false, value: 0 },
+        eht: { id: 4, turned: false, value: 0 }
+};
 
 // Function executed on successful connection
 function onSuccess(interface) {
@@ -49,15 +76,38 @@ function onSuccess(interface) {
         input.value.onmidimessage = onMIDIMessage;
     }
 }
+
+var debounce = 300; //debounce const
 var waitingMIDI = false;
 function onMIDIMessage (message) {
     console.log(message.data);
-    var message_type = message.data[0];
-    var message_id = message.data[1];
-    var message_value = message.data[2];
+    var message = {
+                type: message.data[0],
+                id: message.data[1],
+                value: message.data[2]
+    };
+
     if (!waitingMIDI){ 
         waitingMIDI = true;
-        switch(message_id){
+        matchId(message);
+        /*octave1.keys(obj).map((key) => {
+        if(obj[key].id = message.id)
+              
+        });*/
+        setTimeout(function() { waitingMIDI = false; }, debounce);
+        // filter instead of switch?
+        // octave1.map for id
+        // if found return object
+        // pass to type to keypress
+        // octave2 ""
+        // ""
+        // ""
+        // pad.map for id
+        // if found return object
+        // pass object value type to pressed function 
+
+
+        /*switch(message_id){
             case pad1.id:
                 pad1.pressed = !pad1.pressed;
                 if (message_type==144){
@@ -109,30 +159,75 @@ function onMIDIMessage (message) {
             break;
 
 
-            case key.C1.id:
-                key.C1.pressed = keyboardPress(message_type)
+            case octave1.C.id:
+                octave1.C = buttonEvent(message)
             break;
-            case key.C1SH.id:
-                key.C1SH.pressed = keyboardPress(message_type)
+            case octave1.Csh.id:
+                octave1.Csh.pressed = keyboardEvent(message_type)
             break;
-            case key.D1.id:
-                key.D1.pressed = keyboardPress(message_type)
+            case octave1.D.id:
+                octave1.D.pressed = keyboardEvent(message_type)
             break;
-            case key.D1SH.id:
-                key.D1SH.pressed = keyboardPress(message_type)
+            case octave1.Dsh.id:
+                octave1.Dsh.pressed = keyboardEvent(message_type)
             break;
-        }
-        setTimeout(function() { waitingMIDI = false; }, 300);
+        }*/
+        
     }
 }
 
-function keyboardPress(type){
-        if(type == key_down){
-            pressed = true;
-        }else{
-            pressed = false;
-        }
-    return pressed;
+// more general???
+function matchId(message){
+
+    for( var key in octave1){
+        if( octave1[key].id === message.id )
+            octave1[key] = buttonEvent(message);
+    }
+    for( var key in octave2){
+        if( octave2[key].id === message.id )
+            octave2[key] = buttonEvent(message);
+    }
+    for( var key in pad){
+        if( pad[key].id === message.id )
+            pad[key] = buttonEvent(message);
+    }
+    for( var key in knob){
+        if( knob[key].id === message.id )
+            knob[key] = knobEvent(message);
+    }
+}
+
+function buttonEvent(message){
+    var id, pressed, value;
+
+    id = message.id;
+
+    if(message.type === key_down){
+        pressed = true;    
+    }else{
+        pressed = false;
+    }
+
+    value = (message.value/128); //should this be auto-converted to percentage?
+
+    return { id: id, pressed: pressed, value: value };
+}
+
+function knobEvent(message){
+    var id, turned, value; 
+
+    id = message.id;
+
+    turned = true;
+    setTimeout(function(){ turned = false }, 1000); //specify knob to be timed out?
+
+    value = (message.value/128);
+
+    return { id: id, turned: turned, value: value};
+
+    // maybe easing could be applied here also, but then everythin has same easing?
+    // should definitely set turned timeout here
+
 }
 
 // Function executed on failed connection
