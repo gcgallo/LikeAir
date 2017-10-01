@@ -2,21 +2,43 @@ if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
 
 var camera, scene, renderer , tick = 0;
 var olivia_sphere;
+var olivia = {
+        shape: undefined,
+        light: undefined,
+        pulse: undefined,
+        pulse_inc: 0,
+        level: 0,
+        color: 0x00fff0,
+        size: 0
+}
+
+var adam = {
+        shape: undefined,
+        light: undefined,
+        pulse: undefined,
+        pulse_inc: 0,
+        level: 0,
+        color: 0xff0f00,
+        size: 0
+}
+
 var starSystem, particleSystem;
+var starCount = 1200;
+var star = [];
 var explode=0;
 var pulse=0;
 var options, spawnerOptions;
-var clock = new THREE.Clock();
+var clock = new THREE.Clock(); //use Date.now() instead?
 var gui = new dat.GUI( { width: 350, autoPlace: false } );
 
 var pulse_options; 
 
 var PI = Math.PI;
-var W = window.innerWidth, H = window.innerHeight;
+var W = window.innerWidth/2, H = window.innerHeight;
 
 var video = [], videoImage = [], videoImageContext = [], videoTexture = [];
 var vids=0;
-var screen0, screen1, screen2;
+var screen1, screen2, screen3;
 
 var mixer, loader;
 
@@ -25,43 +47,26 @@ var object;
 function init() {
 
     var container = document.getElementById( 'container' );
+    var controller = document.getElementById('controller');
 
     camera = new THREE.PerspectiveCamera( 60, W/H, 1, 10000 );
     camera.position.z = 100;
 
     scene = new THREE.Scene();
-
-    gui.domElement.id = 'gui';
-    
-    /*var customContainer = document.getElementById('my-gui-container');
-    customContainer.appendChild(gui.domElement);*/
-
-    /*loader = new THREE.JSONLoader();
-
-    loader.load( "media/monkey.json", function ( obj ) {
-        //add the loaded object to the scene
-        object = new THREE.Mesh( obj, new THREE.MeshPhongMaterial( { color: 0x555555, specular: 0x111111, shininess: 50 }  )  );
-        object.scale.x = object.scale.y = object.scale.z = 2;
-        scene.add( object );
-    }, 
-
-    // Function called when download progresses
-    function ( xhr ) {
-        console.log( (xhr.loaded / xhr.total * 100) + '% loaded' );
-    },
-
-    // Function called when download errors
-    function ( xhr ) {
-        console.error( 'An error happened' );
-    }
-
-    );*/
-
-    
-    //scene.fog = new THREE.Fog( 0x040306, 1, 1000 );
     scene.add( new THREE.AmbientLight( 0x00020 ) );
-    //var loader = new THREE.TextureLoader();
-   
+    scene.fog = new THREE.FogExp2( 0xefd1b5, 0.0025 );
+
+    /* add animation importer
+    loader = new THREE.JSONLoader();
+    loader.load( "media/monkey.json", 
+        function ( obj ) {
+            //add the loaded object to the scene
+            object = new THREE.Mesh( obj, new THREE.MeshPhongMaterial( { color: 0x555555, specular: 0x111111, shininess: 50 }  )  );
+            object.scale.x = object.scale.y = object.scale.z = 2;
+            scene.add( object );
+    }
+    );*/
+    
     /* IMPORT VIDEOS HERE
     */ // this could be functionalized further
     var import0 = importVideo("media/cops.mp4", 0);
@@ -69,52 +74,58 @@ function init() {
     videoImage[0] = import0.videoImage;    
     videoImageContext[0] = import0.videoImageContext;    
     videoTexture[0] = import0.videoTexture;    
-    screen0 = createScreen(videoTexture[0], 0, 0, 0, 0);
-    screen0.visible = false;
-    scene.add(screen0);
+    screen1 = createScreen(videoTexture[0], 0, 0, 0, 0);
+    screen1.visible = false;
+    scene.add(screen1);
 
     var import1 = importVideo("media/resist.mp4", 1);
     video[1] = import1.video;    
     videoImage[1] = import1.videoImage;    
     videoImageContext[1] = import1.videoImageContext;    
     videoTexture[1] = import1.videoTexture;    
-    screen1 = createScreen(videoTexture[1], 1, 0, 0, 0);
-    screen1.visible = false;
-    scene.add(screen1);
+    screen2 = createScreen(videoTexture[1], 1, 0, 0, 0);
+    screen2.visible = false;
+    scene.add(screen2);
 
     var import2 = importVideo("media/waters.mp4", 2);
     video[2] = import2.video;    
     videoImage[2] = import2.videoImage;    
     videoImageContext[2] = import2.videoImageContext;    
     videoTexture[2] = import2.videoTexture;    
-    screen2 = createScreen(videoTexture[2], 2, 0, 0, 0);
-    screen2.visible = false;
-    scene.add(screen2);
+    screen3 = createScreen(videoTexture[2], 2, 0, 0, 0);
+    screen3.visible = false;
+    scene.add(screen3);
 
     /*var import3 = importVideo("media/water.mp4", 3);
     video[3] = import3.video;    
     videoImage[3] = import3.videoImage;    
     videoImageContext[3] = import3.videoImageContext;    
     videoTexture[3] = import3.videoTexture;    
-    screen3 = createScreen(videoTexture[3], 3, 0, 0, 0);
-    screen3.visible = false;
-    scene.add(screen3);*/
+    screen4 = createScreen(videoTexture[3], 3, 0, 0, 0);
+    screen4.visible = false;
+    scene.add(screen4);*/
     /* END IMPORT
     */
 
     /* CREATE MAIN POINT LIGHT
     */
-    var olivia = new THREE.SphereGeometry( 1, 64, 16 );
-    olivia_light = new THREE.PointLight( 0x00fff0, 10, 50 );
-    olivia_light.add( new THREE.Mesh( olivia, new THREE.MeshBasicMaterial( { color: 0x00fff0 } ) ) );
-    scene.add( olivia_light );
+    olivia.shape = new THREE.SphereGeometry( 1, 64, 16 );
+    olivia.light = new THREE.PointLight( 0x00fff0, 10, 50 );
+    olivia.light.add( new THREE.Mesh( olivia.shape, new THREE.MeshBasicMaterial( { color: olivia.color } ) ) );
+    scene.add( olivia.light );
+
+    adam.shape = new THREE.SphereGeometry( 1, 64, 16 );
+    adam.light = new THREE.PointLight( 0xff0f00, 10, 50 );
+    adam.light.add( new THREE.Mesh( adam.shape, new THREE.MeshBasicMaterial( { color: adam.color } ) ) );
+    adam.light.visible = false;
+    scene.add( adam.light );
     /* END MAIN POINT LIGHT
     */ 
 
     /* CREATE STAR SYSTEM
     */
     THREE.TextureLoader.crossOrigin = '';
-    var starCount = 1800;
+    
     var starShape = new THREE.SphereGeometry( 1, 64, 16 );
 
     for (var p = 0; p < starCount; p++){ 
@@ -124,21 +135,22 @@ function init() {
            hue: 'blue'
         });
         
-        // convert to array? and/or merge into a single mesh?
-        stars = new THREE.PointLight( colors, 10, 50 );
-        stars.add( new THREE.Mesh( starShape, new THREE.MeshBasicMaterial( { color: colors} ) ) );
+        star[p] = new THREE.PointLight( colors, 10, 50 );
+        star[p].add( new THREE.Mesh( starShape, new THREE.MeshBasicMaterial( { color: colors } ) ) );
+        //star[p] = new THREE.Mesh( starShape, new THREE.MeshBasicMaterial( { color: colors, transparent: true, opacity: 0} ) );
+        star[p].visible = false;
 
         var pX = Math.random() * 500 - 250; // pre-load random numbers
         var pY = Math.random() * 500 - 250; // see example in GPU particle system
         var pZ = Math.random() * 500 - 250;
 
-        stars.position.x = pX;
-        stars.position.y = pY;
-        stars.position.z = pZ;
+        star[p].position.x = pX;
+        star[p].position.y = pY;
+        star[p].position.z = pZ;
 
         var radius = Math.sqrt(pX*pX + pY*pY + pZ*pZ)
         if(radius < 250) 
-            scene.add( stars );
+            scene.add( star[p] );
     }
     /* END STAR SYSTEM
     */
@@ -161,7 +173,7 @@ function init() {
         color: 0x00fff0, //0xaa88ff,
         colorRandomness: .2,
         turbulence: 0,
-        lifetime: 1,
+        lifetime: .5,
         size: 30,
         sizeRandomness: 1
     };
@@ -179,41 +191,41 @@ function init() {
 
     /* CREATE PULSING SHADER
     */
-    var pulseMaterial = new THREE.ShaderMaterial( 
-    {
-        uniforms: 
-        { 
-            "c":   { type: "f", value: .1 }, // what are C and P?
-            "p":   { type: "f", value: 6 },
-            pulseColor: { type: "c", value: new THREE.Color(0x00fff0) },
-            viewVector: { type: "v3", value: camera.position }
-        },
-        vertexShader:   document.getElementById( 'vertexShader'   ).textContent,
-        fragmentShader: document.getElementById( 'fragmentShader' ).textContent,
-        side: THREE.FrontSide,
-        blending: THREE.AdditiveBlending,
-        transparent: true
-    }   );
-    
-    //knob1value = .01
-    
+
     // add more controllable options?
     pulse_options = {
-        pulse: .01, 
+        pace: .01, 
         min: .005,
         max: .05,
         size: 50
     };
 
-    //knob1value = pulse_options.pulse; 
-
-    gui.add( pulse_options, "pulse", pulse_options.min, pulse_options.max ).listen();
+    var f0 = gui.addFolder('pulsing')    
+    gui.add( pulse_options, "pace", pulse_options.min, pulse_options.max ).listen();
     gui.add( pulse_options, "size", 0, 99 ).listen();
 
-    pulsing = new THREE.Mesh( olivia.clone(), pulseMaterial.clone() );
-    pulsing.position = olivia.position;
-    pulsing.scale.multiplyScalar(36);
-    scene.add( pulsing );
+    var f1 = gui.addFolder('video1');
+    f1.add( screen1, "visible").listen();
+    f1.add( screen1.material, "opacity", 0, 1 ).listen();
+
+    var f2 = gui.addFolder('video2');
+    f2.add( screen2, "visible").listen();
+    f2.add( screen2.material, "opacity", 0, 1 ).listen();
+
+    var f3 = gui.addFolder('video3');
+    f3.add( screen3, "visible").listen();
+    f3.add( screen3.material, "opacity", 0, 1 ).listen();
+
+    olivia.pulse = new THREE.Mesh( olivia.shape.clone(), pulseMaterial(olivia.color) );
+    olivia.pulse.position = olivia.shape.position;
+    olivia.pulse.scale.multiplyScalar(36);
+    scene.add( olivia.pulse );
+
+    adam.pulse = new THREE.Mesh( adam.shape.clone(), pulseMaterial(adam.color) );
+    adam.pulse.position = adam.shape.position;
+    adam.pulse.scale.multiplyScalar(36);
+    adam.pulse.visible = false;
+    scene.add( adam.pulse );
     /* END PULSING SHADER
     */
 
@@ -224,21 +236,32 @@ function init() {
     //renderer.setClearColor( scene.fog.color );
     renderer.setPixelRatio( window.devicePixelRatio );
     container.appendChild( renderer.domElement );
+    /* END RENDERER
+    */
+
+    /* INTERACTIVE CONTROLS
+    */ 
     controls = new THREE.OrbitControls( camera, renderer.domElement );
     controls.enableDamping = true;
     controls.dampingFactor = 0.05;
-    /* END RENDERER
+    console.log(controls);
+    gui.domElement.id = 'gui';
 
+    controller.appendChild(gui.domElement);
+
+    // create separate window for controls?
+    //var newWin = open('controller','Controls','height=300,width=300');
+
+    /* END CONTROLS
     */
-        // Load a scene with objects, lights and camera from a JSON file
-    
 
     /* ADD LISTENERS
     */ 
-    // rehandle for midi
+    // create fallbacks if no midi
     window.addEventListener('keydown', handleKeyDown, false);
     //window.addEventListener('keyup', handleKeyUp, false);
     window.addEventListener( 'resize', onWindowResize, false );
+
 
 }
 
@@ -276,15 +299,14 @@ function handleKeyUp(event) {
 
 function onWindowResize() {
 
-    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.aspect = (window.innerWidth/2) / window.innerHeight;
     camera.updateProjectionMatrix();
 
-    renderer.setSize( window.innerWidth, window.innerHeight );
+    renderer.setSize( window.innerWidth/2, window.innerHeight );
 
 }
 
-
-function ease( control, target, easing ){
+function ease(control, target, easing){
     var dx = control-target;
     target += dx * easing;
     return target; 
@@ -293,43 +315,84 @@ function ease( control, target, easing ){
 // tune fade in/out
 var fade_in;
 var fade_out;
-function fadeIn(screen, interval){
-    screen.material.opacity = 0;
+function fadeIn(object, interval, target){
+    var level = 0;
+    object.material.opacity = 0;
+    object.visible = true;
     fade_in = setInterval(
         function(){ 
-            screen.material.opacity += .05;
+            object.material.opacity += .05;
+            level += .05;
+            if( level > target){
+                clearInterval(fade_in);
+            }
         },
     interval);
 }
-function fadeOut(screen, interval){
+function fadeOut(object, interval){
     //screen.material.opacity = 0;
+    var level = object.material.opacity;
     fade_out = setInterval(
         function(){ 
-            screen.material.opacity -= .05;
+            object.material.opacity -= .05;
+            level -= .05;
+            if(level < 0){
+                object.visible = false;
+                clearInterval(fade_out);
+            }
         },
     interval);
 }
 
 function screenSwitch(control, screen){
     if (control.pressed || window.is1Down) {
-
         if(screen.visible){
-            fadeOut(screen, 500/control.value);
+            fadeOut(screen, 500/control.velocity, .5);
         }else{
-            fadeIn(screen, 500/control.value);
-            screen.visible = true;
+            fadeIn(screen, 500/control.velocity, .5);
+            
         }
         control.pressed = false;
         //window.is1Down = false;
     }
-    // this is bad and lazy, time out instead?
-    if(screen.material.opacity > .5)
-        clearInterval(fade_in);
-    if(screen.material.opacity < 0){
-        clearInterval(fade_out);
-        screen.visible = false;
+}
+
+function pressLength(control){
+    var length = Date.now() - control.time; 
+    return length;
+}
+
+function pulseAnimation(object){
+    if (object.pulse_inc == 1){
+        object.pulse.material.uniforms[ "c" ].value += pulse_options.pace;
+        if (object.pulse.material.uniforms[ "c" ].value > .05)
+            object.pulse_inc = 0;
+    }else{
+        object.pulse.material.uniforms[ "c" ].value -= pulse_options.pace;
+        if (object.pulse.material.uniforms[ "c" ].value < -.2)
+            object.pulse_inc = 1;
     }
 }
+
+function pulseMaterial(color){
+    var pulseMaterial = new THREE.ShaderMaterial( 
+    {
+        uniforms: 
+        { 
+            "c":   { type: "f", value: .1 }, // what are C and P?
+            "p":   { type: "f", value: 6 },
+            pulseColor: { type: "c", value: new THREE.Color(color) },
+            viewVector: { type: "v3", value: camera.position }
+        },
+        vertexShader:   document.getElementById( 'vertexShader'   ).textContent,
+        fragmentShader: document.getElementById( 'fragmentShader' ).textContent,
+        side: THREE.FrontSide,
+        blending: THREE.AdditiveBlending,
+        transparent: true
+    }   );
+    return pulseMaterial 
+}
+
 /* END UTILTIES
 */
 
@@ -337,101 +400,99 @@ function animate() {
 
     requestAnimationFrame( animate );
 
-    time = Date.now() * 0.0005;
+    time = Date.now();
 
     render( time );
 
 }
 
-var press_length = 0;
-
-function render( float ){
-
+function render( time ){
 
     var delta = clock.getDelta() * spawnerOptions.timeScale;
 
-    // achange screen numbering
-    screenSwitch(pad.one, screen0);
-    screenSwitch(pad.two, screen1);
-    screenSwitch(pad.thr, screen2);
-    //screenSwitch(pad.fur, screen3);
+    var p = Math.floor(Math.random() * starCount);
+    star[p].visible = true;
+    //fadeIn(star[p], 100, 1);
 
-    console.log(screen1.material.opacity);
+    // change screen numbering to match or switch to object?
+    screenSwitch(pad.one, screen1);
+    screenSwitch(pad.two, screen2);
+    screenSwitch(pad.thr, screen3);
+    //screenSwitch(pad.fur, screen4);
 
     if(knob.one.turned){
-        screen0.material.opacity = ease(knob.one.value, screen0.material.opacity, .1);
-        //setTimeout(function(){ knob.one.turned = false}, 2000); //moved to midi_control
+        screen1.material.opacity = ease(knob.one.value, screen1.material.opacity, .1);
+        if(knob.one.value - .1 < screen1.material.opacity < knob.one.value + .1)
+            setTimeout(function(){ knob.one.turned = false}, 500); //moved to midi_control
     }
 
     if(knob.two.turned){
-        screen1.material.opacity = ease(knob.two.value, screen1.material.opacity, .1);
+        screen2.material.opacity = ease(knob.two.value, screen2.material.opacity, .1);
+        if(knob.two.value - .1 < screen1.material.opacity < knob.two.value + .1)
+            setTimeout(function(){ knob.two.turned = false}, 500); //moved to midi_control
     }
 
     if(knob.thr.turned){
-        screen2.material.opacity = ease(knob.thr.value, screen2.material.opacity, .1);
+        screen3.material.opacity = ease(knob.thr.value, screen3.material.opacity, .1);
     }
 
-    if(knob.fve.turned){
-        var range = knob.fve.value*(pulse_options.max-pulse_options.min)+pulse_options.min;
-        pulse_options.pulse = ease(range, pulse_options.pulse, .1);
-    }
-    
-    if(knob.six.turned){
-        pulse_options.size = ease(knob.six.value*100, pulse_options.size, .01)
-        pulsing.scale.x = pulse_options.size;
-        pulsing.scale.y = pulse_options.size;
-        pulsing.scale.z = pulse_options.size;
-    }    
+    // fix: need ifs to allow dat gui fall back...
+
+    /*if(knob.fve.turned){
+        range = knob.fve.value*(pulse_options.max-pulse_options.min)+pulse_options.min;
+    }*/
+    var range = knob.fve.value;
+    range = knob.fve.value*(pulse_options.max-pulse_options.min)+pulse_options.min;
+    pulse_options.pace = ease(range, pulse_options.pace, .1);
+
+    /*if(knob.six.turned){
+    }*/
+    pulse_options.size = ease(knob.six.value*100, pulse_options.size, .1)
+    olivia.pulse.scale.x = pulse_options.size;
+    olivia.pulse.scale.y = pulse_options.size;
+    olivia.pulse.scale.z = pulse_options.size;
+    olivia.pulse.lookAt(camera.position);
+
+    adam.size = ease(knob.svn.value*100, adam.size, .1)
+    adam.pulse.scale.x = adam.size;
+    adam.pulse.scale.y = adam.size;
+    adam.pulse.scale.z = adam.size;
+    adam.pulse.lookAt(camera.position);
+
+    pulseAnimation(olivia);
+    pulseAnimation(adam);
 
     // quasar effect (add bool/knob control)
-    if(octave1.C.pressed){ 
-        pulsing.rotation.y -= 20 * delta; 
+    /*if(octave1.C.pressed){ 
+        olivia_pulse.rotation.y -= 20 * delta; 
     }
     if(octave1.Csh.pressed){ 
-        pulsing.rotation.y += 20 * delta; 
+        olivia_pulse.rotation.y += 20 * delta; 
     }
     if(octave1.D.pressed){ 
-        pulsing.rotation.x -= 20 * delta; 
+        olivia_pulse.rotation.x -= 20 * delta; 
     }
     if(octave1.Dsh.pressed){ 
-        pulsing.rotation.x += 20 * delta; 
-    }
+        olivia_pulse.rotation.x += 20 * delta; 
+    }*/
 
     if(octave1.E.pressed){
-        press_length += .5; 
+        olivia.level += pressLength(octave1.E)*.001; 
     }
-    olivia_light.position.y = ease(press_length, olivia_light.position.y, .1 );
-    console.log(olivia_light.position.y);
-    console.log(press_length);
+    olivia.light.position.y = ease(olivia.level, olivia.light.position.y, .05 );
+    olivia.pulse.position.y = olivia.light.position.y;
 
-    // pulse effect (add bool to switch between sine and linear?)
-    //pulsing.material.uniforms[ "c" ].value = (Math.sin(time * 3 ) / 25*PI) + PI/240;
-    if (pulse == 1){
-        pulsing.material.uniforms[ "c" ].value += pulse_options.pulse;
-        if (pulsing.material.uniforms[ "c" ].value > .13)
-            pulse = 0;
-    }else{
-        pulsing.material.uniforms[ "c" ].value -= pulse_options.pulse;
-        if (pulsing.material.uniforms[ "c" ].value < -.01)
-            pulse = 1;
+    if(octave1.F.pressed){
+        adam.light.visible = true;
+        adam.pulse.visible = true;
+        adam.level += pressLength(octave1.F)*.001; 
     }
+    adam.light.position.y = ease(adam.level, adam.light.position.y, .05 );
+    adam.pulse.position.y = adam.light.position.y;
+
 
     //controls to modify options
     particleSystem.spawnParticle( options );
-
-    // Inital expansion of particle system 
-    /*if (explode == 1) {
-        options.positionRandomness -= .5;
-    }
-    else{
-        for ( var x = 0; x < spawnerOptions.spawnRate * delta; x++ ) {
-
-
-        }
-        options.positionRandomness += .5;
-        if (options.positionRandomness > 100)
-            explode = 1;
-    }*/ 
    
     /* UPDATE VIDEO 
     */ 
@@ -448,16 +509,6 @@ function render( float ){
     }
     /* END VIDEO UPDATE
     */
-
-    /* START ANIMATION
-
-    */
-    // add switch statement based state machine?
-
-    //olivia_light.position.y += 2 * delta;
-    //pulsing.position.y = light2.position.y;
-
-    
 
     tick += delta;
 
