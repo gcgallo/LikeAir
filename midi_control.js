@@ -41,6 +41,36 @@ var octave2 = {
         B: { id: 71, pressed: false, velocity: 0, time: 0 }
 };
 
+var octave3 = { 
+        C: { id: 72, pressed: false, velocity: 0, time: 0 },
+        Csh: { id: 73, pressed: false, velocity: 0, time: 0 },
+        D: { id: 74, pressed: false, velocity: 0, time: 0 },
+        Dsh: { id: 75, pressed: false, velocity: 0, time: 0 },
+        E: { id: 76, pressed: false, velocity: 0, time: 0 },
+        F: { id: 77, pressed: false, velocity: 0, time: 0 },
+        Fsh: { id: 78, pressed: false, velocity: 0, time: 0 },
+        G: { id: 79, pressed: false, velocity: 0, time: 0 },
+        Gsh: { id: 80, pressed: false, velocity: 0, time: 0 },
+        A: { id: 81, pressed: false, velocity: 0, time: 0 },
+        Ash: { id: 82, pressed: false, velocity: 0, time: 0 },
+        B: { id: 83, pressed: false, velocity: 0, time: 0 }
+};
+
+var octave4 = { 
+        C: { id: 84, pressed: false, velocity: 0, time: 0 },
+        Csh: { id: 85, pressed: false, velocity: 0, time: 0 },
+        D: { id: 86, pressed: false, velocity: 0, time: 0 },
+        Dsh: { id: 87, pressed: false, velocity: 0, time: 0 },
+        E: { id: 88, pressed: false, velocity: 0, time: 0 },
+        F: { id: 89, pressed: false, velocity: 0, time: 0 },
+        Fsh: { id: 90, pressed: false, velocity: 0, time: 0 },
+        G: { id: 91, pressed: false, velocity: 0, time: 0 },
+        Gsh: { id: 92, pressed: false, velocity: 0, time: 0 },
+        A: { id: 93, pressed: false, velocity: 0, time: 0 },
+        Ash: { id: 94, pressed: false, velocity: 0, time: 0 },
+        B: { id: 95, pressed: false, velocity: 0, time: 0 }
+};
+
 // keys and pads overloaded? same ids/notes? hmmm
             
 var pad = {
@@ -106,6 +136,14 @@ function matchId(message){
     for( var key in octave2){
         if( octave2[key].id === message.id )
             octave2[key] = buttonEvent(message);
+    }
+    for( var key in octave3){
+        if( octave3[key].id === message.id )
+            octave3[key] = buttonEvent(message);
+    }
+    for( var key in octave4){
+        if( octave4[key].id === message.id )
+            octave4[key] = buttonEvent(message);
     }
     for( var key in pad){
         if( pad[key].id === message.id )

@@ -1,17 +1,18 @@
+var video = [];
 function importVideo(source, index){
     var videoElement = 'video' + index;
     var videoImageElement = 'videoImage' + index;
-    var video = document.createElement( 'video' );
-    video.id = videoElement
-    video.src = source;
-    video.load(); // must call after setting/changing source
-    video.loop = true;
-    video.muted = true;
-    video.play();
-    console.log(video);
+    video[index] = document.createElement( 'video' );
+    video[index].id = videoElement
+    video[index].src = source;
+    video[index].load(); // must call after setting/changing source
+    video[index].loop = true;
+    video[index].muted = true;
+    video[index].pause();
+    console.log(video[index]);
     var videoImage = document.getElementById( videoImageElement );
     var videoImageContext = videoImage.getContext( '2d' );
-    // background color if no video present
+    // background color if no video[index] present
     videoImageContext.fillStyle = '#000000';
     videoImageContext.fillRect( 0, 0, videoImage.width, videoImage.height );
 
@@ -22,7 +23,7 @@ function importVideo(source, index){
     console.log(videoTexture);
     vids++;
     return {
-        video: video,
+        video: video[index],
         videoImage: videoImage,
         videoImageContext: videoImageContext,
         videoTexture: videoTexture};
@@ -30,14 +31,17 @@ function importVideo(source, index){
 
 function createScreen(texture, index, position_x, position_y, position_z ){
     var movieMaterial = new THREE.MeshBasicMaterial( { 
-        map: texture, 
+        map: texture,
+        //vertexShader:   document.getElementById( 'vertexShader'   ).textContent,
+        //fragmentShader: document.getElementById( 'fragmentShader' ).textContent,
         overdraw: true, 
         side:THREE.DoubleSide, 
         transparent: true, 
         opacity: 0} );
     // the geometry on which the movie will be displayed;
     //  movie image will be scaled to fit these dimensions.
-    var movieGeometry = new THREE.PlaneGeometry( 100, 100, 1, 1 );
+    var W = window.innerWidth/2, H = window.innerHeight;
+    var movieGeometry = new THREE.PlaneGeometry( W/5, H/5, 1, 1 );
     var movieScreen = new THREE.Mesh( movieGeometry, movieMaterial );
     movieScreen.transparent = true;
     //movieScreen.opacity = 1;
