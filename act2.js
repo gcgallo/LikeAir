@@ -553,7 +553,6 @@ function render( time ){
     var p = Math.floor(Math.random() * starCount);
     star[p].visible = true;
 
-    //lazy way of fadin in objects?
     if (scene.fog.density > .0002){
         scene.fog.density -= .0001;
     }
@@ -563,6 +562,7 @@ function render( time ){
     var fog_range = .02;
     fog_range = knob.eht.value*(.02-.0002)+.0002;
     scene.fog.density = ease(fog_range, scene.fog.density, .1)
+    console.log(scene.fog.density);
 
     //fadeIn(star[p], 100, 1);
 
