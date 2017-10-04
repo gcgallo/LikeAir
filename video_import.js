@@ -1,4 +1,20 @@
 var video = [];
+var videoImage = [];    
+var videoImageContext = [];    
+var videoTexture = [];    
+var screen = [];
+
+function loadVideo(url, index){
+    var imported = importVideo(url, index);
+    video[index] = imported.video;    
+    videoImage[index] = imported.videoImage;    
+    videoImageContext[index] = imported.videoImageContext;    
+    videoTexture[index] = imported.videoTexture;    
+    screen[index] = createScreen(videoTexture[index], index, 0, 0, 0);
+    screen[index].visible = false;
+    return screen[index];
+}
+
 function importVideo(source, index){
     var videoElement = 'video' + index;
     var videoImageElement = 'videoImage' + index;
@@ -19,9 +35,7 @@ function importVideo(source, index){
     var videoTexture = new THREE.Texture( videoImage );
     videoTexture.minFilter = THREE.LinearFilter;
     videoTexture.magFilter = THREE.LinearFilter;
-    console.log(vids);
     console.log(videoTexture);
-    vids++;
     return {
         video: video[index],
         videoImage: videoImage,

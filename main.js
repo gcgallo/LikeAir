@@ -399,10 +399,12 @@ function handleKeyUp(event) {
 
 function onWindowResize() {
 
-    camera.aspect = (window.innerWidth/2) / window.innerHeight;
+    var l = $('#container');
+
+    camera.aspect = (l.width()) / window.innerHeight;
     camera.updateProjectionMatrix();
 
-    renderer.setSize( window.innerWidth/2, window.innerHeight );
+    renderer.setSize( l.width(), window.innerHeight );
 
 }
 
@@ -601,19 +603,6 @@ function render( time ){
     pulseAnimation(olivia);
     pulseAnimation(adeymo);
 
-    // quasar effect (add bool/knob control)
-    /*if(octave1.C.pressed){ 
-        olivia_pulse.rotation.y -= 20 * delta; 
-    }
-    if(octave1.Csh.pressed){ 
-        olivia_pulse.rotation.y += 20 * delta; 
-    }
-    if(octave1.D.pressed){ 
-        olivia_pulse.rotation.x -= 20 * delta; 
-    }
-    if(octave1.Dsh.pressed){ 
-        olivia_pulse.rotation.x += 20 * delta; 
-    }*/
     if(breathe){
         if(octave1.F.pressed){
             particle_options.color = olivia.color;
