@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+    <head>
+       <meta charset="utf-8">
+       <meta http-equiv="Pragma" content="no-cache"/>
+    </head>
+    <body>
+        <!--<button onClick="generateWEBM()">Generate Video</button><br />
+        <progress id="progress" value="0" max="1"></progress><br />
+        -->
+        <link rel="stylesheet" href="index.css">
+        <div id="container"></div> 
+        <div id="handle"></div>
+        <div id="controller">
+            <a href="act1.html" class="more round">Act 1 start<a> 
+        </div> 
+        <script src="js/three.js"></script>
+        <script src="js/randomColor.js"></script>
+        <script src="js/dat.gui.min.js"></script>
+        <script src="js/Detector.js"></script>
+        <script src="js/OrbitControls.js"></script>
+        <script src="js/CCapture.all.min.js"></script>
+        <script src="js/GPUParticleSystem.js"></script>
+        <script src="js/jquery-3.2.1.min.js"></script>
+
+        <!-- vertex shader -->
+        <script id="vertexShader" type="x-shader/x-vertex">
+        uniform vec3 viewVector;
+        uniform float c;
+        uniform float p;
+        varying float intensity;
+        void main() 
+        { 
+            vec3 vNormal = normalize( normalMatrix * normal );
+            vec3 vNormel = normalize( normalMatrix * viewVector );
+            intensity = pow( c - dot(vNormal, vNormel), p );
+            
+            gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
+        }
+        </script>
+
+        <!-- fragment shader a.k.a. pixel shader -->
+        <script id="fragmentShader" type="x-shader/x-vertex"> 
+        uniform vec3 pulseColor;
+        varying float intensity;
+        void main() 
+        {
+            vec3 glow = pulseColor * intensity;
+            gl_FragColor = vec4( glow, 1.0 );
+        }
+        </script>
+
+        <video id="monitor" autoplay width="160" height="120" style="visibility: hidden; float:left;"></video>
+        <canvas id="videoImage0" width="160" height="120" style="visibility: hidden; float:left;"></canvas>
+        <canvas id="videoImage1" width="160" height="120" style="visibility: hidden; float:left;"></canvas>
+        <canvas id="videoImage2" width="160" height="120" style="visibility: hidden; float:left;"></canvas>
+        <canvas id="videoImage3" width="160" height="120" style="visibility: hidden; float:left;"></canvas>
+
+        <!--<script src="webcam_feed.js"></script>-->
+        <!--<script src="generate_video.js"></script>-->
+        <script src="video_import.js"></script>
+        <script src="midi_control.js"></script>
+        <script src="main1.js"></script>
+    </body>
+</html>

@@ -1,13 +1,19 @@
 if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
 
 var camera, scene, renderer , tick = 0;
+
+var h = $('#handle'),
+    l = $('#container'),
+    r = $('#controller'),
+    w = $('body').width() - 18;
+
 var olivia = {
         shape: new THREE.SphereGeometry( 1, 64, 16 ),
-        light: new THREE.PointLight( 0x00fff0, 10, 50 ),
+        light: new THREE.PointLight( 0x99ceff, 10, 50 ),
         pulse: undefined, 
         pulse_inc: 0,
         level: 0,
-        color: 0x00fff0,
+        color: 0x99ceff,
         size: 1,
         height: 1
 }
@@ -17,41 +23,27 @@ var adeymo = {
         light: new THREE.PointLight( 0xff0f00, 10, 50 ),
         pulse: undefined,
         pulse_inc: 0,
-        level: 0,
+        angle: Math.PI/6,
         color: 0xff0f00,
         size: 1,
         height: 1
 }
 
-var bar = [];
-for(var i = 0; i < 8; i++){
-    bar[i] = {
+var eyes = [];
+for(var i = 0; i < 12; i++){
+    eyes[i] = {
             shape: undefined,
             light: undefined,
             pulse: undefined,
             pulse_inc: 0,
             level: 0,
-            color: 0xff0f00,
+            color: randomColor({ luminosity: 'bright', hue: 'blue' }),
             size: 1,
             height: 1
     };
 }
 
-var cal = [];
-for(var i = 0; i < 8; i++){
-    cal[i] = {
-            shape: undefined,
-            light: undefined,
-            pulse: undefined,
-            pulse_inc: 0,
-            level: 0,
-            color: 0xff0f00,
-            size: 1,
-            width: 1
-    };
-}
 
-var starSystem, particleSystem;
 var starCount = 1200;
 var star = [];
 var pulse=0;
@@ -61,7 +53,7 @@ var gui = new dat.GUI( { width: 350, autoPlace: false } );
 var pulse_options; 
 
 var PI = Math.PI;
-var W = window.innerWidth*.48, H = window.innerHeight;
+var W = l.width(), H = window.innerHeight;
 
 var mixer, loader;
 
@@ -82,11 +74,21 @@ function init() {
     /* IMPORT VIDEOS HERE
     */ 
     // this could be better, return scene add, xyz positioning
-    loadVideo("media/resist.mp4", 0);
+    loadVideo("media/resist2.mp4", 0);
+    //screen[0].position.y = -50;
     scene.add(screen[0]);
 
-    loadVideo("media/nature.webm", 1);
+    loadVideo("media/streets.m4v", 1);
+    screen[1].position.y = -50;
     scene.add(screen[1]);
+
+    loadVideo("media/bookstore1s.mp4", 2);
+    screen[2].position.y = -50;
+    scene.add(screen[2]);
+
+    loadVideo("media/bookstore2s.mp4", 3);
+    screen[3].position.y = -50;
+    scene.add(screen[3]);
 
     /* END IMPORT
     */
@@ -107,20 +109,20 @@ function init() {
     scene.add( olivia.light );
 
     olivia.pulse = new THREE.Mesh( olivia.shape.clone(), pulseMaterial(olivia.color) ),
-    olivia.light.position.x = 0;
+    olivia.pulse.position.x = 0;
     olivia.pulse.position.y = -40;
     olivia.pulse.position.z = 0;
     scene.add( olivia.pulse );
 
     adeymo.light.add( new THREE.Mesh( adeymo.shape, new THREE.MeshBasicMaterial( { color: adeymo.color } ) ) );
     adeymo.light.position.x = 150;
-    adeymo.light.position.y = 40;
+    adeymo.light.position.y = 0;
     adeymo.light.position.z = -100;
     scene.add( adeymo.light );
 
     adeymo.pulse = new THREE.Mesh( adeymo.shape.clone(), pulseMaterial(adeymo.color) ),
     adeymo.pulse.position.x = 150;
-    adeymo.pulse.position.y = 40;
+    adeymo.pulse.position.y = 0;
     adeymo.pulse.position.z = -100;
     scene.add( adeymo.pulse );
 
@@ -130,6 +132,66 @@ function init() {
     ground.position. y = -50;
     ground.rotation.x = Math.PI/2; 
     scene.add(ground);
+
+    for(var i = 0 ; i < 12 ; i++){
+        eyes[i].shape = new THREE.SphereGeometry( 1, 64, 16 );
+        eyes[i].light = new THREE.PointLight( eyes[i].color, 10, 50 );
+        eyes[i].light.add( new THREE.Mesh( olivia.shape, new THREE.MeshBasicMaterial( { color: eyes[i].color } ) ) );
+        
+        eyes[i].light.position.z = -100;
+
+        eyes[i].light.visible = false;
+        scene.add( eyes[i].light );
+
+        eyes[i].pulse = new THREE.Mesh( olivia.shape.clone(), pulseMaterial(eyes[i].color) );
+        
+        eyes[i].pulse.scale.multiplyScalar(8);
+        eyes[i].pulse.visible = false;
+        scene.add( eyes[i].pulse );
+    }
+
+    //super lazy
+    eyes[0].light.position.x = -120;
+    eyes[0].light.position.y = 15;
+
+    eyes[1].light.position.x = -100;
+    eyes[1].light.position.y = 30;
+
+    eyes[2].light.position.x = -80;
+    eyes[2].light.position.y = 40;
+
+    eyes[3].light.position.x = -60;
+    eyes[3].light.position.y = 45;
+
+    eyes[4].light.position.x = -40;
+    eyes[4].light.position.y = 48;
+
+    eyes[5].light.position.x = -20;
+    eyes[5].light.position.y = 50;
+
+    eyes[6].light.position.x = 20;
+    eyes[6].light.position.y = 50;
+
+    eyes[7].light.position.x = 40;
+    eyes[7].light.position.y = 48;
+
+    eyes[8].light.position.x = 60;
+    eyes[8].light.position.y = 45;
+
+    eyes[9].light.position.x = 80;
+    eyes[9].light.position.y = 40;
+
+    eyes[10].light.position.x = 100;
+    eyes[10].light.position.y = 30;    
+
+    eyes[11].light.position.x = 120;
+    eyes[11].light.position.y = 15; 
+
+    for(var i = 0 ; i < 12 ; i++){
+        eyes[i].pulse.position.x = eyes[i].light.position.x;
+        eyes[i].pulse.position.y = eyes[i].light.position.y;
+        eyes[i].pulse.position.z = eyes[i].light.position.z;
+    }
 
     /* END MAIN POINT LIGHT
     */ 
@@ -173,11 +235,14 @@ function init() {
     gui.add( scene.fog, "density", .0002, .02 ).listen();
     var f0 = gui.addFolder('pulsing')    
     gui.add( pulse_options, "pace", pulse_options.min, pulse_options.max ).listen();
-    gui.add( olivia, "size", 0, 99 ).listen();
-    gui.add( adeymo, "size", 0, 99 ).listen();
+    gui.add( olivia, "size", 0, 50 ).listen();
+    gui.add( adeymo, "size", 0, 3 ).listen();
 
     videoControls(0);
     videoControls(1);
+    videoControls(2);
+    videoControls(3);
+
 
     /* CONFIG RENDERER
     */
@@ -208,12 +273,8 @@ function init() {
     window.addEventListener('keydown', handleKeyDown, false);
     //window.addEventListener('keyup', handleKeyUp, false);
     window.addEventListener( 'resize', onWindowResize, false );
-    // FINE, i'll use jquery
-    var h = $('#handle'),
-    l = $('#container'),
-    r = $('#controller'),
-    w = $('body').width() - 18;
 
+    // FINE, i'll use jquery
     var isDragging = false;
 
     h.mousedown(function(e){
@@ -333,7 +394,7 @@ function screenSwitch(control, index){
         }else{
             console.log(video[index]);
             video[index].play();
-            fadeIn(screen[index], 1/control.velocity, .5);
+            fadeIn(screen[index], 1/control.velocity, .2);
             
         }
         control.pressed = false;
@@ -385,29 +446,16 @@ function pulseMaterial(color){
     return pulseMaterial 
 }
 
-function barFormation(control, object){
+function lightAppear(object, object2, control){
     if(control.pressed){
-        object.light.visible = true;
-        object.height += pressLength(control)*.001; 
+        object.light.visible = !object.light.visible; 
+        object.pulse.visible = !object.pulse.visible;
+        object2.light.visible = !object2.light.visible; 
+        object2.pulse.visible = !object2.pulse.visible;
+        control.pressed = false;     
     }
-    object.light.scale.y = ease(object.height, object.light.scale.y, .05 );
-}
+}    
 
-function barDecay(control, object){
-    if(control.pressed){
-        object.light.visible = true;
-        object.level -= pressLength(control)*.001; 
-    }
-    object.light.position.y = ease(object.level, object.light.position.y, .05 );
-}
-
-function calendarFormation(control, object){
-    if(control.pressed){
-        object.light.visible = true;
-        object.width += pressLength(control)*.001; 
-    }
-    object.light.scale.x = ease(object.width, object.light.scale.x, .05 );
-}
 /* END UTILTIES
 */
 
@@ -424,6 +472,8 @@ function animate() {
 var supermoon = true;
 var therapy = false;
 var bookstore = false;
+var bookstore2 = false; 
+var bookstore3 = false; 
 knob.eht.value = 1;
 
 function render( time ){
@@ -444,59 +494,183 @@ function render( time ){
     // change screen numbering to match or switch to object?
     screenSwitch(pad.one, 0);
     screenSwitch(pad.two, 1);
+    screenSwitch(pad.thr, 2);
+    screenSwitch(pad.fur, 3);
 
     screenOpacity(knob.one, 0);
     screenOpacity(knob.two, 1);
+    screenOpacity(knob.thr, 2);
+    screenOpacity(knob.fur, 3);
 
     // fix: need ifs to allow dat gui fall back...
 
-    /*if(knob.fve.turned){
-        range = knob.fve.value*(pulse_options.max-pulse_options.min)+pulse_options.min;
-    }*/
     var range = knob.fve.value;
     range = knob.fve.value*(pulse_options.max-pulse_options.min)+pulse_options.min;
-    pulse_options.pace = ease(range, pulse_options.pace, .1);
+    pulse_options.pace = ease(range, pulse_options.pace, .05);
 
-    /*if(knob.six.turned){
-    }*/
-    olivia.size = ease(knob.six.value*100, olivia.size, .1)
+    olivia.size = ease(knob.six.value*50, olivia.size, .01)
     olivia.pulse.scale.x = olivia.size;
     olivia.pulse.scale.y = olivia.size;
     olivia.pulse.scale.z = olivia.size;
 
-    adeymo.size = ease(knob.svn.value*100, adeymo.size, .1)
+    adeymo.size = ease(knob.svn.value*3, adeymo.size, .01)
     adeymo.pulse.scale.x = adeymo.size;
     adeymo.pulse.scale.y = adeymo.size;
     adeymo.pulse.scale.z = adeymo.size;
 
     // slow/stop pulse
     pulseAnimation(olivia);
-    pulseAnimation(adeymo);
+    
+    //pulseAnimation(adeymo);
     olivia.pulse.lookAt(camera.position);
     adeymo.pulse.lookAt(camera.position);
 
     if(supermoon){
-        if(octave1.F.pressed){
-            olivia.level += pressLength(octave1.F)*.001; 
+        if(octave2.C.pressed){
+            adeymo.angle += pressLength(octave2.C)*.00001; 
         }
+        if(octave2.Csh.pressed){
+            adeymo.angle -= pressLength(octave2.Csh)*.00001; 
+        }
+        adeymo.pulse.material.uniforms[ "c" ].value = -.2;
+        radius = Math.sqrt(150*150 + 70*70);
+        var pX = radius*Math.cos(adeymo.angle);
+        var pY = radius*Math.sin(adeymo.angle);
+        adeymo.light.position.x = ease(pX, adeymo.light.position.x, .005 );
+        adeymo.light.position.y = ease(pY, adeymo.light.position.y, .005 );
+        adeymo.pulse.position.x = adeymo.light.position.x;
+        adeymo.pulse.position.y = adeymo.light.position.y;
 
-        if(octave1.Fsh.pressed){
-            olivia.level -= pressLength(octave1.Fsh)*.001; 
-        }
-        //olivia.light.position.x = ease(olivia.level, olivia.light.position.y, .05 );
-        //olivia.pulse.position.x = olivia.light.position.y;
-
-        if(octave1.G.pressed){
-            adeymo.level += pressLength(octave1.G)*.001; 
-        }
-        if(octave1.Gsh.pressed){
-            adeymo.level -= pressLength(octave1.Gsh)*.001; 
-        }
-        //adeymo.light.position.x = ease(adeymo.level, adeymo.light.position.y, .05 );
-        //adeymo.pulse.position.x = adeymo.light.position.y;
-
-        if(octave1.A.pressed) 
+        if(pad.fve.pressed){ 
+            supermoon = false;
             therapy = true;
+            pad.fve.pressed = false;
+        }
+    }
+    if(therapy){
+        pulseAnimation(adeymo);
+        adeymo.light.position.x = ease(0, adeymo.light.position.x, .001 );
+        adeymo.light.position.y = ease(-40, adeymo.light.position.y, .001 );
+        adeymo.light.position.z = ease(0, adeymo.light.position.z, .001 );
+        adeymo.pulse.position.x = adeymo.light.position.x;
+        adeymo.pulse.position.y = adeymo.light.position.y;
+        adeymo.pulse.position.z = adeymo.light.position.z;
+
+        adeymo.light.scale.x = ease(.1, adeymo.light.scale.x, .001 );
+        adeymo.light.scale.y = ease(.1, adeymo.light.scale.y, .001 );
+        adeymo.light.scale.z = ease(.1, adeymo.light.scale.z, .001 );
+
+        //adeymo.color = 0xffff4d;
+        adeymo.light.children[0].material.color[0] = ease(1, adeymo.light.children[0].material.color[0], .001);
+        adeymo.light.children[0].material.color[1] = ease(1, adeymo.light.children[0].material.color[1], .001);
+        adeymo.light.children[0].material.color[2] = ease(.3, adeymo.light.children[0].material.color[2], .001);
+        adeymo.color = ease(0xffff4d, adeymo.color, .1);
+        adeymo.pulse.material = pulseMaterial(adeymo.color);
+        //adeymo.light.children[0].material.color = adeymo.color;
+
+        olivia.light.position.x = ease(0, olivia.light.position.x, .001 );
+        olivia.light.position.y = ease(55, olivia.light.position.y, .001 );
+        olivia.light.position.z = ease(-100, olivia.light.position.z, .001 );
+        olivia.pulse.position.x = olivia.light.position.x;
+        olivia.pulse.position.y = olivia.light.position.y;
+        olivia.pulse.position.z = olivia.light.position.z;
+        olivia.light.visible = true;
+
+        lightAppear(eyes[0], eyes[11], octave2.C);        
+        lightAppear(eyes[1], eyes[10], octave2.Csh);
+        lightAppear(eyes[2], eyes[9], octave2.D);
+        lightAppear(eyes[3], eyes[8], octave2.Dsh);
+        lightAppear(eyes[4], eyes[7], octave2.E);
+        lightAppear(eyes[5], eyes[6], octave2.F);
+
+        if(pad.six.pressed){ 
+            therapy = false;
+            bookstore = true;
+            pad.six.pressed = false ;
+        }
+    }   
+    if(bookstore){
+        adeymo.light.position.x = ease(-90, adeymo.light.position.x, .001 );
+        adeymo.light.position.y = ease(0, adeymo.light.position.y, .001 );
+        adeymo.light.position.z = ease(0, adeymo.light.position.z, .001 );
+        adeymo.pulse.position.x = adeymo.light.position.x;
+        adeymo.pulse.position.y = adeymo.light.position.y;
+        adeymo.pulse.position.z = adeymo.light.position.z;
+
+        adeymo.light.scale.x = ease(.01, adeymo.light.scale.x, .001 );
+        adeymo.light.scale.y = ease(.01, adeymo.light.scale.y, .001 );
+        adeymo.light.scale.z = ease(.01, adeymo.light.scale.z, .001 );
+
+        olivia.light.position.x = ease(90, olivia.light.position.x, .001 );
+        olivia.light.position.y = ease(0, olivia.light.position.y, .001 );
+        olivia.light.position.z = ease(0, olivia.light.position.z, .001 );
+        olivia.pulse.position.x = olivia.light.position.x;
+        olivia.pulse.position.y = olivia.light.position.y;
+        olivia.pulse.position.z = olivia.light.position.z;
+        if(pad.svn.pressed){ 
+            bookstore = false;
+            bookstore2 = true;
+            pad.svn.pressed = false ;
+            olivia.level = olivia.light.position.x;
+            adeymo.level = adeymo.light.position.x;
+        }
+
+    }
+
+    if(bookstore2){    
+
+        if(octave2.C.pressed){
+
+            olivia.level -= pressLength(octave2.C)*.001; 
+        }
+        olivia.light.position.x = ease(olivia.level, olivia.light.position.x, .01 );
+        olivia.pulse.position.x = olivia.light.position.x;
+
+        if(octave1.B.pressed){
+
+            adeymo.level += pressLength(octave1.B)*.001; 
+        }
+        adeymo.light.position.x = ease(adeymo.level, adeymo.light.position.x, .01 );
+        adeymo.pulse.position.x = adeymo.light.position.x;
+
+        if(octave2.Csh.pressed){
+
+            olivia.level += pressLength(octave2.Csh)*.001; 
+        }
+        olivia.light.position.x = ease(olivia.level, olivia.light.position.x, .01 );
+        olivia.pulse.position.x = olivia.light.position.x;
+
+        if(octave1.Ash.pressed){
+
+            adeymo.level -= pressLength(octave1.Ash)*.001; 
+        }
+        adeymo.light.position.x = ease(adeymo.level, adeymo.light.position.x, .01 );
+        adeymo.pulse.position.x = adeymo.light.position.x;
+
+        if(pad.eht.pressed){
+            bookstore3 = true;
+            pad.eht.pressed = false;
+        }
+
+
+    }
+
+    if(bookstore3){
+        //adeymo.color = 0xffffff;
+        adeymo.light.children[0].material.color[0] = ease(1, adeymo.light.children[0].material.color[0], .001);
+        adeymo.light.children[0].material.color[1] = ease(1, adeymo.light.children[0].material.color[1], .001);
+        adeymo.light.children[0].material.color[2] = ease(1, adeymo.light.children[0].material.color[2], .001);
+        adeymo.color = ease(0xffffff, adeymo.color, .1);
+        adeymo.pulse.material = pulseMaterial(adeymo.color);
+        adeymo.light.children[0].material.color = adeymo.color;
+
+        //olivia.color = 0xffffff;
+        olivia.light.children[0].material.color[0] = ease(1, olivia.light.children[0].material.color[0], .001);
+        olivia.light.children[0].material.color[1] = ease(1, olivia.light.children[0].material.color[1], .001);
+        olivia.light.children[0].material.color[2] = ease(1, olivia.light.children[0].material.color[2], .001);
+        olivia.color = ease(0xffffff, olivia.color, .1);
+        olivia.pulse.material = pulseMaterial(olivia.color);
+        olivia.light.children[0].material.color = olivia.color;
 
     }
 

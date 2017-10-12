@@ -12,7 +12,7 @@ function loadVideo(url, index){
     videoTexture[index] = imported.videoTexture;    
     screen[index] = createScreen(videoTexture[index], index, 0, 0, 0);
     screen[index].visible = false;
-    return screen[index];
+    //return screen[index];
 }
 
 function importVideo(source, index){
@@ -55,7 +55,7 @@ function createScreen(texture, index, position_x, position_y, position_z ){
     // the geometry on which the movie will be displayed;
     //  movie image will be scaled to fit these dimensions.
     var W = window.innerWidth/2, H = window.innerHeight;
-    var movieGeometry = new THREE.PlaneGeometry( W/5, H/5, 1, 1 );
+    var movieGeometry = new THREE.PlaneGeometry( 200, 300, 1, 1 );
     var movieScreen = new THREE.Mesh( movieGeometry, movieMaterial );
     movieScreen.transparent = true;
     //movieScreen.opacity = 1;
