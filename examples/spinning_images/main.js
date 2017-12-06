@@ -10,7 +10,7 @@ var W = window.innerWidth, H = window.innerHeight;
 var progress = document.getElementById( 'progress' );
 var generating = false;
 var time = 0;
-var capturer = new CCapture( { format: 'webm' , framerate: 30 } );
+//var capturer = new CCapture( { format: 'webm' , framerate: 30 } );
 
 function init() {
 
@@ -75,7 +75,7 @@ function init() {
         pMaterial);
 
     scene.add(particleSystem1);
-
+/*
     particleSystem2 = new THREE.GPUParticleSystem( {
         maxParticles: 250000
     } );
@@ -100,7 +100,7 @@ function init() {
         horizontalSpeed: 1.5,
         verticalSpeed: 1.33,
         timeScale: 1
-    };
+    };*/
 
     
     /* import blender mesh
@@ -176,8 +176,7 @@ function render( float ){
     //camera.position.y = Math.sin( Date.now() * 0.002 ) * 300;
     //camera.lookAt(mesh.position);
     //var delta = clock.getDelta();
-    var delta = clock.getDelta() * spawnerOptions.timeScale;
-    if( mesh ) mesh.rotation.y -= 0.5 * delta;
+    //if( mesh ) mesh.rotation.y -= 0.5 * delta;
     //moonGlow.rotation.y -= 1.5 * delta;
 
     mesh.position.x = Math.sin( time * 0.7 ) * 30;
@@ -189,29 +188,11 @@ function render( float ){
     //if( moonGlow.material.uniforms[ "c" ].value < 0 ) 
     //moonGlow.material.uniforms[ "c" ].value = .1;
     
-    light2.position.y += 2 * delta;
     moonGlow.position.y = light2.position.y;
 
     if(light2.position.y > 50){
         light2.position.y = 0; 
     }
-    particleSystem1.rotation.y += 0.01;
-
-    tick += delta;
-
-    //options.position.x = Math.sin( tick * spawnerOptions.horizontalSpeed ) * 20;
-    //options.position.y = Math.sin( tick * spawnerOptions.verticalSpeed ) * 10;
-    //options.position.z = Math.sin( tick * spawnerOptions.horizontalSpeed + spawnerOptions.verticalSpeed ) * 5;
-
-    for ( var x = 0; x < spawnerOptions.spawnRate * delta; x++ ) {
-
-        // Yep, that's really it.   Spawning particles is super cheap, and once you spawn them, the rest of
-        // their lifecycle is handled entirely on the GPU, driven by a time uniform updated below
-
-        particleSystem2.spawnParticle( options );
-
-    }
-    particleSystem2.update( tick );
 
     renderer.render( scene, camera );
     //effect.render( scene, camera );

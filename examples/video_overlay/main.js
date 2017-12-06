@@ -34,29 +34,28 @@ function init() {
     /* IMPORT VIDEOS HERE
     */ 
     // this could be better, return scene add, xyz positioning
-    loadVideo("disaster/sample2.webm", 0);
+    loadVideo("media/sample2.webm", 0);
     //screen[0].position.y = -50;
     video[0].play()
     scene.add(screen[0]);
 
-    loadVideo("disaster/waters.mp4", 1);
+    loadVideo("media/waters.mp4", 1);
     screen[1].position.y = -50;
     video[1].play()
     scene.add(screen[1]);
 
-    loadVideo("disaster/water1s.m4v", 2);
+    loadVideo("media/water1s.m4v", 2);
     screen[2].position.y = -50;
     video[2].play()
     scene.add(screen[2]);
 
-    loadVideo("disaster/air2.m4v", 3);
+    loadVideo("media/air2.m4v", 3);
     screen[3].position.y = -50;
     video[3].play()
     scene.add(screen[   3]);
 
-    loadVideo("disaster/strings.mp4", 4);
+    loadVideo("media/strings.mp4", 4);
     screen[4].position.y = -50;
-    
     video[4].play()
     scene.add(screen[4]);
 

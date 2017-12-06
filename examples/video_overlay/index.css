@@ -1,0 +1,67 @@
+body {
+  	background-color: #000000;
+    margin: 0;
+    overflow: hidden;
+    color: #fff;	
+}
+
+#container{
+    border:1px solid #aaa;
+    cursor: none;
+    float:left;
+    height:100vh;;
+    width:50%;
+}
+
+#controller{
+    float:left;
+    height:100vh;;
+    width:46%;
+}
+
+#handle{
+    background:#aaa;
+    float:left;
+    height:100vh;
+    margin:1px;
+    width:1%;
+}
+.more {
+      outline: none;
+      display: block;
+      width: 200px;
+      padding: 6px 0;
+      text-align: center;
+      border: 1px solid #ddd;
+      border-bottom: 1px solid #aaa;
+      border-right: 1px solid #aaa;
+      background-color: #aaa;
+      background-repeat: repeat-x;
+      background-position: left top;
+      font-size: 14px;
+      text-shadow: 1px 1px 1px #fff;
+      font-weight: bold;
+      height: 22px;
+      line-height: 1.5em;
+      margin-bottom: 6px;
+      position: absolute;
+      top: 0;
+      right: 0;
+      /*background-image: url('/images/more.gif');*/
+    }
+    
+    .more:hover {
+      border: 1px solid #bbb;
+      text-decoration: none;
+      background-position: left -78px;
+    }
+    
+    .more:active {
+      color: #666;
+      background-position: left -38px;
+    }
+    
+    .round {
+      -moz-border-radius: 5px;
+      -webkit-border-radius: 5px;
+    }

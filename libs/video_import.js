@@ -4,6 +4,7 @@ var videoImageContext = [];
 var videoTexture = [];    
 var screen = [];
 
+// index correspondes to the statically created video canvas element listed in index.html
 function loadVideo(url, index){
     var imported = importVideo(url, index);
     video[index] = imported.video;    

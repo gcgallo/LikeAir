@@ -12,16 +12,25 @@
         <div id="container"></div> 
         <div id="handle"></div>
         <div id="controller">
-            <a href="act1.html" class="more round">Act 1 start<a> 
+            <a href="index.html" class="more round">next piece<a> 
         </div> 
-        <script src="js/three.js"></script>
+
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/88/three.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/randomcolor/0.5.2/randomColor.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.6.5/dat.gui.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+
+        <script src="js/Detector.js"></script>
+        <script src="js/OrbitControls.js"></script>
+
+        <!--<script src="js/three.js"></script>
         <script src="js/randomColor.js"></script>
         <script src="js/dat.gui.min.js"></script>
         <script src="js/Detector.js"></script>
         <script src="js/OrbitControls.js"></script>
         <script src="js/CCapture.all.min.js"></script>
         <script src="js/GPUParticleSystem.js"></script>
-        <script src="js/jquery-3.2.1.min.js"></script>
+        <script src="js/jquery-3.2.1.min.js"></script> -->
 
         <!-- vertex shader -->
         <script id="vertexShader" type="x-shader/x-vertex">
@@ -41,7 +50,7 @@
 
         <!-- fragment shader a.k.a. pixel shader -->
         <script id="fragmentShader" type="x-shader/x-vertex"> 
-        uniform vec3 pulseColor;
+        uniform vec3 pulseColor
         varying float intensity;
         void main() 
         {
@@ -55,11 +64,15 @@
         <canvas id="videoImage1" width="160" height="120" style="visibility: hidden; float:left;"></canvas>
         <canvas id="videoImage2" width="160" height="120" style="visibility: hidden; float:left;"></canvas>
         <canvas id="videoImage3" width="160" height="120" style="visibility: hidden; float:left;"></canvas>
+        <canvas id="videoImage4" width="160" height="120" style="visibility: hidden; float:left;"></canvas>
 
         <!--<script src="webcam_feed.js"></script>-->
         <!--<script src="generate_video.js"></script>-->
-        <script src="video_import.js"></script>
-        <script src="midi_control.js"></script>
-        <script src="main1.js"></script>
+        <!--<script src="video_import.js"></script>-->
+        <!--<script src="midi_control.js"></script>-->
+        <script src="https://paidforby.github.io/LikeAir/video_import.js"></script>
+        <script src="https://paidforby.github.io/LikeAir/midi_control.js"></script>
+
+        <script src="main.js"></script>
     </body>
 </html>

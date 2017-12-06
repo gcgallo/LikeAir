@@ -71,7 +71,7 @@ function init() {
     loadVideo("media/nature3s.m4v", 2);
     scene.add(screen[2]);
 
-    loadVideo("media/falldown.m4v", 3);
+    loadVideo("media/dayparti.mp4", 3);
     scene.add(screen[3]);
 
     /* END IMPORT
