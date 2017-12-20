@@ -112,7 +112,7 @@ function onSuccess(interface) {
 //var debounce = 20;
 //var waitingMIDI = false;
 function onMIDIMessage(message){
-    console.log(message.data);
+    //console.log(message.data);
     var message = {
                 type: message.data[0],
                 id: message.data[1],
