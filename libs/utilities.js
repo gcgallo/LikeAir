@@ -106,7 +106,7 @@ function screenSwitch(control, index){
 
 function screenOpacity(control, index){
     if(control.turned){
-        screen[index].material.opacity = ease(control.value, screen[index].material.opacity, .1);
+        screen[index].material.opacity = ease(0, 1, control.value, screen[index].material.opacity, .1);
         if(control.value - .01 < screen[index].material.opacity < control.value + .01)
             setTimeout(function(){ control.turned = false}, 500); //moved to midi_control
     }
