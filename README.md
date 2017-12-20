@@ -17,7 +17,7 @@ python -m SimpleHTTPServer #or your preferred HTTP server
 then go to localhost:8000 (or whatever port you started your server on)  
 you should be able to play around with the video overlays even with out a midi keyboard  
 
-Alternatively, you can go to paidforby.github.io/LikeAir/examples/video_overlay and try running the online version.
+Alternatively, you can go [here](https://paidforby.github.io/LikeAir/examples/video_overlay and try running the online version.
 
 ## MIDI Keyboard
 MIDI is a standard for representing music notes as discrete data. However, it can be used and interpreted for any purpose.
