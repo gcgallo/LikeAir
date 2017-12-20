@@ -6,11 +6,10 @@ if (navigator.requestMIDIAccess) {
   console.log("Web MIDI API not supported!");
 }
 
-//var clock = new THREEE.Clock();
 var key_down = 144, // midi code for up/down event type
     key_up = 128;
 
-// convert keyboard to JSON object
+// build objects smart, loop and increment
 var octave1 = { 
         C: { id: 48, pressed: false, velocity: 0, time: 0 },
         Csh: { id: 49, pressed: false, velocity: 0, time: 0 },
@@ -92,7 +91,7 @@ var knob = {
         fve: { id: 1, turned: false, value: 0 },
         six: { id: 2, turned: false, value: 0 },
         svn: { id: 3, turned: false, value: 0 },
-        eht: { id: 4, turned: false, value: 0 }
+        eht: { id: 4, turned: false, value: 0}
 };
 
 // Function executed on successful connection
@@ -178,16 +177,15 @@ function knobEvent(message, key){
 
     id = message.id;
 
+    // detects if knob moved from initial position (ie was touched once)
     turned = true;
-    setTimeout(function(){ knob[key].turned = false }, 1000); //specify knob to be timed out?
+    //setTimeout(function(){ knob[key].turned = false }, 1000); //specify knob to be timed out?
 
     value = (message.value/128);
 
     return { id: id, turned: turned, value: value};
 
     // maybe easing could be applied here also, but then everythin has same easing?
-    // should definitely set turned timeout here
-
 }
 
 // Function executed on failed connection
