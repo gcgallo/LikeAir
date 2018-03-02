@@ -20,6 +20,22 @@ you should be able to play around with the video overlays even with out a midi k
 Alternatively, you can go [here](https://paidforby.github.io/LikeAir/examples/video_overlay and try running the online version.
 
 ## MIDI Keyboard
+The most-working and practical aspect of this project is currently providing a library for interfacing with midi keyboards via the WebMIDI standard.  
+Import `midi_control.js` into any web page with,  
+```
+<script language="javascript" type="text/javascript" src="https://paidforby.github.io/LikeAir/libs/midi_control.js"></script>
+```
+Any key on any given midi device can then be referenced by octave and note, that is, "middle C" can be reference as `octave4.C` and holds the values `pressed`, `velocity`, and `time` where,  
+`octave4.C.pressed` = a boolean of whether or not middle C has been pressed in the previous loop  
+`octave4.C.velocity` = the speed at which the middle C key was pressed  
+`octave4.C.time` = the duration for which the middle C key has been pressed (TODO change var name to "duration"?)  
+
+Additionally, pads and knobs may be reference in a similar manner (note: pads often overlap with notes on the keyboard). Pads hold the same values as keys, so just replace the octave and note with 'pad.one', 'pad.two', 'pad.thr', and so on, (TODO come up with a better name scheme).    
+
+Knobs return slightly different MIDI values and therefore are handled differently (this may change depending on keyboard model? for example, my knobs don't double as push buttons. also, I'm not sure how to handle encoders?) . Knobs can be referenced as follows,  
+`knob.fve.turned` = a boolean of whether or not the fifth knob was turned (right now this has to be reset to manually)  
+`knob.fve.value` = a decimal value between   
+ 
 MIDI is a standard for representing music notes as discrete data. However, it can be used and interpreted for any purpose.
 This project uses MIDI data to control visual elements of a javascript WebGL animation (a "piece" as I'm calling them).
 The MIDI controls are defined in [libs/midi_control.js](https://github.com/paidforby/LikeAir/blob/master/libs/midi_control.js).
