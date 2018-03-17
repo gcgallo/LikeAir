@@ -1,7 +1,8 @@
 
 var camera, scene, renderer, controls;
-var terrain_mesh, water_mesh, water_height = 0.25;
+var terrain_mesh = [], water_mesh, water_height = 0.25;
 var terrain_detail = 8, terrain_roughness = 0.7;
+var mesh_count = 0;
 
 function Terrain(detail) {
     this.size = Math.pow(2, detail) + 1;
@@ -77,9 +78,10 @@ Terrain.prototype.generate = function (roughness) {
     }
 };
 
-Terrain.prototype.addMesh = function () {
+Terrain.prototype.addMesh = function (pos_x, pos_y, pos_z) {
     var self = this;
 
+    // this is where the x y bounds of the landscape is determined...
     var terrain_geometry = new THREE.PlaneGeometry(512, 512, this.size - 1, this.size - 1);
     var min_height = Infinity;
     var max_height = -Infinity;
@@ -100,9 +102,10 @@ Terrain.prototype.addMesh = function () {
     scene.remove(terrain_mesh);
 
     terrain_material  = new THREE.MeshNormalMaterial();
-    terrain_mesh = new THREE.Mesh(terrain_geometry, terrain_material);
-    terrain_mesh.rotation.x = -Math.PI / 2.0;
-    scene.add(terrain_mesh);
+    terrain_mesh[mesh_count] = new THREE.Mesh(terrain_geometry, terrain_material);
+    terrain_mesh[mesh_count].rotation.x = -Math.PI / 2.0;
+    scene.add(terrain_mesh[mesh_count]);
+    terrain_mesh[mesh_count].position.set(pos_x, pos_y, pos_z);
 
     var water_geometry = new THREE.BoxGeometry(516, 516, 512);
     var water_material = new THREE.MeshBasicMaterial({
@@ -112,7 +115,8 @@ Terrain.prototype.addMesh = function () {
     });
     water_mesh = new THREE.Mesh(water_geometry, water_material);
     water_mesh.scale.z = (min_height+max_height)/(2*256);
-    terrain_mesh.add(water_mesh);
+    terrain_mesh[mesh_count].add(water_mesh);
+    mesh_count++;
 }
 
 function init() {
@@ -158,13 +162,14 @@ function init() {
     controls.minDistance = 300;
     controls.maxDistance = 600;
 
-    //controls = new THREE.FlyControls( camera );
+    /*controls = new THREE.FlyControls( camera, renderer.domElement );
 
-    //controls.movementSpeed = 1000;
+    controls.movementSpeed = 1000;
     //controls.domElement = container;
-    //controls.rollSpeed = Math.PI / 24;
-    //controls.autoForward = false;
-    //controls.dragToLook = false;
+    controls.rollSpeed = Math.PI / 24;
+    controls.autoForward = true;
+    controls.dragToLook = false;
+    */
 
 }
 
@@ -185,7 +190,8 @@ function animate() {
 function generate() {
     var terrain = new Terrain(parseInt(terrain_detail));
     terrain.generate(terrain_roughness);
-    terrain.addMesh();
+    terrain.addMesh(0, 0, 0);
+    //terrain.addMesh(512, 0, 0);
 };
 
 init();

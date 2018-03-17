@@ -1,6 +1,7 @@
 if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
 
-var scene, renderer, container, video, videoImage, videoImageContext, videoTexture, camera
+var scene, renderer, container, camera;
+var webcam;
 
 function init() {
 
@@ -15,31 +16,25 @@ function init() {
     container = document.getElementById('container');
     container.appendChild( renderer.domElement );
 
-    createStream();
+    createStream(); // opens webcam stream
 
-    video = document.getElementById( 'monitor' );
-        
-    // webcam = importVideo('monitor', 0);
+    // automate indexing!
+    webcam = loadVideo('monitor');
+    webcam.video.play();
+    webcam.screen.position.y = -100;
+    scene.add(webcam.screen);
 
-    videoImage = document.getElementById( 'videoImage0' );
-    videoImageContext = videoImage.getContext( '2d' );
-    videoImageContext.fillStyle = '#000000';
-    videoImageContext.fillRect( 0, 0, videoImage.width, videoImage.height );
-
-    videoTexture = new THREE.Texture( videoImage );
-    videoTexture.minFilter = THREE.LinearFilter;
-    videoTexture.magFilter = THREE.LinearFilter;
-                    
-    var movieMaterial = new THREE.MeshBasicMaterial( { map: videoTexture, overdraw: true, side:THREE.DoubleSide } );
-    var movieGeometry = new THREE.PlaneGeometry( 100, 100, 1, 1 );
-    var movieScreen = new THREE.Mesh( movieGeometry, movieMaterial );
-    movieScreen.position.set(0,50,0);
-    scene.add(movieScreen);
-
-    video.play();
+    sample = loadVideo('examples/video_overlay/media/sample2.webm');
+    sample.video.play();
+    sample.screen.position.x = 100;
+    scene.add(sample.screen);
                                             
     camera.position.set(0,150,300);
-    camera.lookAt(movieScreen.position);
+    camera.lookAt(sample.screen.position);
+
+    controls = new THREE.OrbitControls( camera, renderer.domElement );
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.05;
 
 }
 
@@ -47,40 +42,16 @@ function init() {
 function animate() {
 
     requestAnimationFrame( animate );
-
     time = Date.now();
-
     render( time );
 
 }
     
 function render( time ){
 
-   
-    /* UPDATE VIDEO 
-    */ 
-    // for (var i = 0; i < video.length ; i++){
-    //     if ( video[i].readyState === video[i].HAVE_ENOUGH_DATA ) 
-    //     {
-    //         videoImageContext[i].drawImage( video[i], 0, 0, videoImage[i].width, videoImage[i].height );
-    //         if ( videoTexture[i] ) 
-    //             videoTexture[i].needsUpdate = true;
-    //     }
-    //     if( video[i].readyState === video[i].HAVE_ENOUGH_DATA ){
-    //       videoTexture[i].needsUpdate = true;
-    //     }
-    // }
-    if ( video.readyState === video.HAVE_ENOUGH_DATA ) 
-    {
-        videoImageContext.drawImage( video, 0, 0, videoImage.width, videoImage.height );
-        if ( videoTexture ) 
-            videoTexture.needsUpdate = true;
-    }
-    if( video.readyState === video.HAVE_ENOUGH_DATA ){
-      videoTexture.needsUpdate = true;
-    }
-    /* END VIDEO UPDATE
-    */
+    updateAllVideos();
+    //updateOneVideo(webcam);
+    //updateOneVideo(sample);
 
     renderer.render( scene, camera );
 

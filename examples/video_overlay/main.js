@@ -34,10 +34,10 @@ function init() {
     /* IMPORT VIDEOS HERE
     */ 
     // this could be better, return scene add, xyz positioning
-    loadVideo("media/sample2.webm", 0);
+    space_vid = loadVideo("media/sample2.webm", 0);
     //screen[0].position.y = -50;
-    video[0].play()
-    scene.add(screen[0]);
+    space.video.play()
+    scene.add(space.screen);
 
     loadVideo("media/waters.mp4", 1);
     screen[1].position.y = -50;
