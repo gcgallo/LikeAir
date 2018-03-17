@@ -1,11 +1,19 @@
 /*UTILTY FUNCTIONS
 */
-function videoControls(index){
-        var text = 'video' + index; 
+var gui = new dat.GUI(); //{ width: 350, autoPlace: false } );
+
+function videoControls(vid){
+        console.log(vid);
+        var text = vid.name; 
         var f = gui.addFolder(text);
-        f.add( screen[index], "visible").listen();
-        f.add( screen[index].material, "opacity", 0, .99 ).listen();
+        f.add(vid.screen, "visible").listen();
+        vid.screen.material.transparent = true;
+        f.add(vid.screen.material, "opacity", 0, 1 ).listen();
         f.open();
+}
+
+function toggleVisible(obj){
+        obj.visible = !obj.visible;
 }
 
 var waitingDown = false;

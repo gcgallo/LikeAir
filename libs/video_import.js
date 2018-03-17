@@ -21,6 +21,7 @@ function loadVideo(source){
     screen[index].visible = true;
     index++;
     return {
+        name: source,
         video: video[index-1],
         videoImage: videoImage[index-1],
         videoImageContext: videoImageContext[index-1],
@@ -93,7 +94,7 @@ function createScreen(texture, index, position_x, position_y, position_z ){
     // the geometry on which the movie will be displayed;
     //  movie image will be scaled to fit these dimensions.
     var W = window.innerWidth/2, H = window.innerHeight;
-    var movieGeometry = new THREE.PlaneGeometry( 200, 300, 1, 1 );
+    var movieGeometry = new THREE.PlaneGeometry( 200, 200, 1, 1 );
     var movieScreen = new THREE.Mesh( movieGeometry, movieMaterial );
     movieScreen.transparent = true;
     //movieScreen.opacity = 1;
