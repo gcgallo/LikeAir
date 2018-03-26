@@ -10,22 +10,9 @@ body {
     cursor: none;
     float:left;
     height:100vh;;
-    width:50%;
+    width:100%;
 }
 
-#controller{
-    float:left;
-    height:100vh;;
-    width:46%;
-}
-
-#handle{
-    background:#aaa;
-    float:left;
-    height:100vh;
-    margin:1px;
-    width:1%;
-}
 .more {
       outline: none;
       display: block;

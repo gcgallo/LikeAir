@@ -8,22 +8,13 @@ if (navigator.requestMIDIAccess) {
 
 var akai_down = 144, // midi code for up/down event type
     akai_up = 128,
-    korg_down = 127; // midi code for up/down event type
+    korg_down = 176; // midi code for up/down event type
 
 var midi_connected = false;
 var midi_controller;
 
 //var midi_controller = "korg"; // "akai"
 var octave1, octave2, octave3, octave4, pad, knob, slider;
-var logging = false;
-
-function midiLog(val){
-    if(val){
-        logging = true;
-    }else{
-        logging = false
-    }
-}
 
 function midiController(device){
     // build objects smart, loop and increment
@@ -129,22 +120,9 @@ function midiController(device){
                 thr: { id: 4, turned: false, value: 0 },
                 fur: { id: 5, turned: false, value: 0 },
                 fve: { id: 6, turned: false, value: 0 },
-                six: { id: 8, turned: false, value: 0 },
-                svn: { id: 9, turned: false, value: 0 },
-                eht: { id: 12, turned: false, value: 0},
-                nne: { id: 13, turned: false, value: 0}
-        };
-
-        pad = {
-                one: { id: 23, pressed: false, velocity: 0, time: 0 },
-                two: { id: 24, pressed: false, velocity: 0, time: 0 },
-                thr: { id: 25, pressed: false, velocity: 0, time: 0 },
-                fur: { id: 26, pressed: false, velocity: 0, time: 0 },
-                fve: { id: 27, pressed: false, velocity: 0, time: 0 },
-                six: { id: 28, pressed: false, velocity: 0, time: 0 },
-                svn: { id: 29, pressed: false, velocity: 0, time: 0 }, 
-                eht: { id: 30, pressed: false, velocity: 0, time: 0 },
-                nne: { id: 31, pressed: false, velocity: 0, time: 0 }
+                six: { id: 7, turned: false, value: 0 },
+                svn: { id: 8, turned: false, value: 0 },
+                eht: { id: 9, turned: false, value: 0}
         };
     }
 }
@@ -166,9 +144,7 @@ function onSuccess(interface) {
 //var debounce = 20;
 //var waitingMIDI = false;
 function onMIDIMessage(message){
-    if(logging){
-        console.log(message.data);
-    }
+    //console.log(message.data);
     var message = {
                 type: message.data[0],
                 id: message.data[1],
@@ -205,7 +181,7 @@ function matchId(message){
     }
     for( var key in pad){
         if( pad[key].id === message.id )
-            pad[key] = buttonEvent(message, pad[key]);
+            pad[key] = buttonEvent(message);
     }
     for( var key in knob){
         if( knob[key].id === message.id )
@@ -217,7 +193,7 @@ function matchId(message){
     }
 }
 
-function buttonEvent(message, button){
+function buttonEvent(message){
     var id, pressed, value;
 
     id = message.id;
@@ -232,13 +208,12 @@ function buttonEvent(message, button){
     }
 
     if(midi_controller == "korg"){
-        if(message.value === korg_down){
-            console.log(button);
-            pressed = !button.pressed;
+        if(message.type === korg_down){
+            pressed = true;
             time = Date.now();
 
         }else{
-            pressed = button.pressed;
+            pressed = false;
         }
     }
 
